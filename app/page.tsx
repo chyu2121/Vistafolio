@@ -1,4 +1,9 @@
-export default function Home() {
-  return <div>안녕하세요</div>;
+import Hero from "@/components/main/hero";
 
+export default function Home() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between">
+      <Hero />
+    </main>
+  );
 }
