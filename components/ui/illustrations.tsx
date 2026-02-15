@@ -3,30 +3,95 @@
 import React from "react"
 
 export const PortfolioIllustration = ({ className }: { className?: string }) => {
+    // Helper function to create arc path for donut segments
+    const createArcPath = (startAngle: number, endAngle: number, outerRadius: number, innerRadius: number) => {
+        const startRad = (startAngle - 90) * (Math.PI / 180);
+        const endRad = (endAngle - 90) * (Math.PI / 180);
+
+        const x1 = outerRadius * Math.cos(startRad);
+        const y1 = outerRadius * Math.sin(startRad);
+        const x2 = outerRadius * Math.cos(endRad);
+        const y2 = outerRadius * Math.sin(endRad);
+
+        const x3 = innerRadius * Math.cos(endRad);
+        const y3 = innerRadius * Math.sin(endRad);
+        const x4 = innerRadius * Math.cos(startRad);
+        const y4 = innerRadius * Math.sin(startRad);
+
+        const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+
+        return `M ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+    };
+
+    const outerRadius = 28;
+    const innerRadius = 15;
+    const colors = [
+        { fill: "rgba(147, 197, 114, 0.9)", name: "Green" },      // 0-72
+        { fill: "rgba(186, 128, 106, 0.8)", name: "Brown" },      // 72-144
+        { fill: "rgba(100, 150, 200, 0.8)", name: "Blue" },       // 144-216
+        { fill: "rgba(180, 100, 160, 0.8)", name: "Purple" },     // 216-288
+        { fill: "rgba(255, 130, 130, 0.8)", name: "Red" },        // 288-360
+    ];
+
     return (
         <svg
             viewBox="0 0 100 100"
             className={className}
             fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+            stroke="none"
         >
-            {/* Abstract chart representing portfolio growth */}
-            <path d="M10 90 L90 90" strokeOpacity="1" />
-            <path d="M10 90 L10 10" strokeOpacity="1" />
+            {/* Donut Chart - Perfect circular visualization */}
+            <g transform="translate(50, 50)">
+                {/* Segment 1 - Green */}
+                <path
+                    d={createArcPath(0, 72, outerRadius, innerRadius)}
+                    fill={colors[0].fill}
+                    stroke="rgba(255, 255, 255, 0.2)"
+                    strokeWidth="0.5"
+                />
 
-            {/* Growth Lines */}
-            <path d="M10 80 L30 60 L50 70 L70 30 L90 20" className="opacity-100" />
-            <path d="M10 85 L30 65 L50 75 L70 35 L90 25" className="opacity-50" />
+                {/* Segment 2 - Brown */}
+                <path
+                    d={createArcPath(72, 144, outerRadius, innerRadius)}
+                    fill={colors[1].fill}
+                    stroke="rgba(255, 255, 255, 0.2)"
+                    strokeWidth="0.5"
+                />
 
-            {/* Abstract elements indicating data points */}
-            <circle cx="30" cy="60" r="2" fill="currentColor" />
-            <circle cx="50" cy="70" r="2" fill="currentColor" />
-            <circle cx="70" cy="30" r="2" fill="currentColor" />
-            <circle cx="90" cy="20" r="2" fill="currentColor" />
+                {/* Segment 3 - Blue */}
+                <path
+                    d={createArcPath(144, 216, outerRadius, innerRadius)}
+                    fill={colors[2].fill}
+                    stroke="rgba(255, 255, 255, 0.2)"
+                    strokeWidth="0.5"
+                />
 
-            {/* Pie chart hint in background */}
-            <circle cx="75" cy="75" r="15" strokeOpacity="0.3" strokeDasharray="30 60" />
+                {/* Segment 4 - Purple */}
+                <path
+                    d={createArcPath(216, 288, outerRadius, innerRadius)}
+                    fill={colors[3].fill}
+                    stroke="rgba(255, 255, 255, 0.2)"
+                    strokeWidth="0.5"
+                />
+
+                {/* Segment 5 - Red/Pink */}
+                <path
+                    d={createArcPath(288, 360, outerRadius, innerRadius)}
+                    fill={colors[4].fill}
+                    stroke="rgba(255, 255, 255, 0.2)"
+                    strokeWidth="0.5"
+                />
+
+                {/* Center circle (donut hole) */}
+                <circle
+                    cx="0"
+                    cy="0"
+                    r={innerRadius - 2}
+                    fill="rgba(255, 255, 255, 0.08)"
+                    stroke="rgba(255, 255, 255, 0.15)"
+                    strokeWidth="0.5"
+                />
+            </g>
         </svg>
     )
 }
@@ -37,32 +102,34 @@ export const AiNewsIllustration = ({ className }: { className?: string }) => {
             viewBox="0 0 100 100"
             className={className}
             fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+            stroke="none"
         >
-            {/* Central Node (AI Core) */}
-            <circle cx="50" cy="50" r="15" />
-            <circle cx="50" cy="50" r="8" strokeOpacity="0.5" />
+            {/* Newspaper/Article Card */}
+            {/* Main paper background */}
+            <rect x="15" y="20" width="70" height="60" rx="3" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(147, 197, 114, 0.4)" strokeWidth="1.5" />
 
-            {/* Connections (Neural Network / News Feed) */}
-            <path d="M50 35 L50 15" />
-            <path d="M65 50 L85 50" />
-            <path d="M50 65 L50 85" />
-            <path d="M35 50 L15 50" />
+            {/* Header section - Green */}
+            <rect x="15" y="20" width="70" height="12" rx="3" fill="rgba(147, 197, 114, 0.7)" stroke="none" />
 
-            {/* Satellite Nodes (News Sources) */}
-            <circle cx="50" cy="10" r="4" />
-            <circle cx="90" cy="50" r="4" />
-            <circle cx="50" cy="90" r="4" />
-            <circle cx="10" cy="50" r="4" />
+            {/* AI Badge - Blue */}
+            <rect x="22" y="24" width="12" height="4" rx="1.5" fill="rgba(100, 150, 200, 0.8)" stroke="none" />
+            <text x="28" y="27" fontSize="2.5" fill="rgba(255,255,255,0.9)" fontWeight="700">AI</text>
 
-            {/* Data Flow Indications */}
-            <path d="M60 40 L80 20" strokeDasharray="4 4" strokeOpacity="0.5" />
-            <path d="M40 60 L20 80" strokeDasharray="4 4" strokeOpacity="0.5" />
+            {/* Title lines - Brown */}
+            <rect x="22" y="38" width="50" height="2" rx="1" fill="rgba(186, 128, 106, 0.8)" stroke="none" />
+            <rect x="22" y="43" width="45" height="1.5" rx="0.75" fill="rgba(186, 128, 106, 0.6)" stroke="none" />
 
-            {/* Text Lines Representation */}
-            <rect x="35" y="45" width="30" height="2" fill="currentColor" stroke="none" className="opacity-80" />
-            <rect x="35" y="53" width="20" height="2" fill="currentColor" stroke="none" className="opacity-60" />
+            {/* Content lines - Purple */}
+            <rect x="22" y="50" width="55" height="1.2" rx="0.6" fill="rgba(180, 100, 160, 0.6)" stroke="none" />
+            <rect x="22" y="53" width="52" height="1.2" rx="0.6" fill="rgba(180, 100, 160, 0.5)" stroke="none" />
+            <rect x="22" y="56" width="48" height="1.2" rx="0.6" fill="rgba(180, 100, 160, 0.5)" stroke="none" />
+
+            {/* Summary indicator - Red */}
+            <circle cx="71" cy="52" r="4" fill="rgba(255, 130, 130, 0.7)" stroke="none" />
+            <text x="71" y="53.5" fontSize="3" fill="rgba(255,255,255,0.9)" fontWeight="700" textAnchor="middle">!</text>
+
+            {/* Decorative corner */}
+            <path d="M75 68 L75 75 L82 75" stroke="rgba(147, 197, 114, 0.4)" strokeWidth="1" fill="none" strokeLinecap="round" />
         </svg>
     )
 }
@@ -73,22 +140,41 @@ export const SavingsIllustration = ({ className }: { className?: string }) => {
             viewBox="0 0 100 100"
             className={className}
             fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+            stroke="none"
         >
-            {/* Stacked Coins / Growth Blocks */}
-            <rect x="20" y="70" width="15" height="20" rx="2" />
-            <rect x="42" y="55" width="15" height="35" rx="2" />
-            <rect x="64" y="40" width="15" height="50" rx="2" />
+            {/* Bankbook/Passbook background */}
+            <g>
+                {/* Front cover */}
+                <rect x="20" y="25" width="50" height="50" rx="3" fill="rgba(147, 197, 114, 0.6)" stroke="rgba(147, 197, 114, 0.8)" strokeWidth="1.5" />
 
-            {/* Percentage Symbol Abstract */}
-            <circle cx="30" cy="30" r="5" />
-            <circle cx="70" cy="20" r="5" />
-            <line x1="25" y1="20" x2="75" y2="30" strokeOpacity="0.5" />
+                {/* Bank title - Green */}
+                <text x="45" y="40" fontSize="4" fill="rgba(255,255,255,0.95)" fontWeight="700" textAnchor="middle">Bank</text>
 
-            {/* Upward Arrow */}
-            <path d="M85 80 L85 30 L75 40" strokeWidth="2" />
-            <path d="M85 30 L95 40" strokeWidth="2" />
+                {/* Divider line */}
+                <rect x="25" y="44" width="40" height="0.8" rx="0.4" fill="rgba(255, 255, 255, 0.3)" />
+
+                {/* Account info section - Brown */}
+                <rect x="28" y="50" width="15" height="2" rx="1" fill="rgba(186, 128, 106, 0.7)" />
+                <text x="28" y="54" fontSize="1.5" fill="rgba(186, 128, 106, 0.8)">Account</text>
+
+                {/* Amount display - Blue */}
+                <rect x="28" y="58" width="30" height="3" rx="1.5" fill="rgba(100, 150, 200, 0.6)" stroke="rgba(100, 150, 200, 0.8)" strokeWidth="0.8" />
+                <text x="45" y="60.5" fontSize="2" fill="rgba(255,255,255,0.95)" fontWeight="700" textAnchor="middle">$$$</text>
+
+                {/* Interest rate indicator - Purple */}
+                <circle cx="28" cy="70" r="2.5" fill="rgba(180, 100, 160, 0.7)" stroke="none" />
+                <text x="28" y="71" fontSize="1.8" fill="rgba(255,255,255,0.9)" fontWeight="700" textAnchor="middle">%</text>
+
+                {/* Growth arrow - Red/Pink */}
+                <path d="M35 70 L45 65 L50 72" fill="none" stroke="rgba(255, 130, 130, 0.8)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+
+                {/* Back page peek - offset shadow */}
+                <rect x="23" y="28" width="50" height="50" rx="3" fill="rgba(100, 150, 200, 0.3)" stroke="none" />
+            </g>
+
+            {/* Decorative coin icon */}
+            <circle cx="72" cy="65" r="6" fill="rgba(255, 130, 130, 0.7)" stroke="rgba(255, 130, 130, 0.9)" strokeWidth="0.8" />
+            <text x="72" y="67" fontSize="5" fill="rgba(255,255,255,0.95)" fontWeight="700" textAnchor="middle">¥</text>
         </svg>
     )
 }
