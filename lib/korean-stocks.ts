@@ -31,6 +31,7 @@ export const stockDatabase: Record<string, { ticker: string; koName: string }> =
   "sk이노베이션": { ticker: "096770.KS", koName: "SK이노베이션" },
   "lg에너지솔루션": { ticker: "373220.KS", koName: "LG에너지솔루션" },
   "한중엔시에스": { ticker: "054870.KQ", koName: "한중엔시에스" },
+  "hanjungncs": { ticker: "107640.KQ", koName: "한중엔시에스" },
   "카카오뱅크": { ticker: "323410.KQ", koName: "카카오뱅크" },
   "카뱅": { ticker: "323410.KQ", koName: "카카오뱅크" },
 
