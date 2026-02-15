@@ -2,6 +2,7 @@ import YahooFinanceClass from 'yahoo-finance2';
 import { NextResponse } from 'next/server';
 import { findStock, getKoreanName } from '@/lib/korean-stocks';
 import kisClient from '@/lib/kis-client';
+import publicDataClient from '@/lib/public-data-client';
 
 const yahooFinance = new YahooFinanceClass();
 
@@ -20,7 +21,6 @@ export async function GET(request: Request) {
         const stockInfo = findStock(query);
 
         if (stockInfo) {
-            // 한국 주식이면 KIS API 또는 database 데이터 사용
             const koName = getKoreanName(stockInfo.ticker);
             return NextResponse.json({
                 results: [
@@ -29,17 +29,43 @@ export async function GET(request: Request) {
                         name: koName !== stockInfo.ticker ? koName : stockInfo.ticker,
                         exchange: stockInfo.ticker.endsWith('.KQ') ? 'KOSDAQ' : 'KOSPI',
                         type: 'korean',
+                        source: 'database',
                     },
                 ],
             });
         }
 
-        // 2. 한국 주식으로 보이면 KIS API에서 검색
+        // 2. 한국 주식으로 보이면 공공데이터포털 KRX API에서 검색
         const isKoreanQuery =
             /^[가-힣a-zA-Z0-9\-]+$/.test(query) && // 한글이나 영문 포함
             !query.match(/\.[A-Z]{1,3}$/); // 티커 형식 아님
 
         if (isKoreanQuery) {
+            // 공공데이터포털 시도
+            try {
+                const krxResults = await publicDataClient.searchStock(query);
+                if (krxResults.length > 0) {
+                    return NextResponse.json({
+                        results: krxResults.map((item) => {
+                            const exchangeCode = publicDataClient.getExchangeCode(item.market);
+                            const ticker = `${item.code}.${exchangeCode}`;
+                            const koName = getKoreanName(ticker);
+
+                            return {
+                                ticker,
+                                name: koName !== ticker ? koName : item.name,
+                                exchange: item.market,
+                                type: 'korean',
+                                source: 'krx',
+                            };
+                        }),
+                    });
+                }
+            } catch (error) {
+                console.warn('KRX search failed:', error);
+            }
+
+            // 공공데이터포털 실패 시 KIS API 시도
             try {
                 const kisResults = await kisClient.searchStock(query);
                 if (kisResults.length > 0) {
@@ -49,11 +75,12 @@ export async function GET(request: Request) {
                             name: item.name,
                             exchange: item.market,
                             type: 'korean',
+                            source: 'kis',
                         })),
                     });
                 }
             } catch (error) {
-                console.warn('KIS search failed, falling back to Yahoo Finance:', error);
+                console.warn('KIS search failed:', error);
             }
         }
 
@@ -73,6 +100,7 @@ export async function GET(request: Request) {
                     name: item.longname || item.shortname || ticker,
                     exchange: item.exchange || '',
                     type: 'global',
+                    source: 'yahoo',
                 };
             });
 
