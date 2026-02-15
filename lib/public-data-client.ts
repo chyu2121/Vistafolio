@@ -33,7 +33,7 @@ interface PublicDataResponse {
 
 class PublicDataClient {
   private apiKey: string;
-  private baseUrl = 'https://openapi.data.go.kr/api/3/search';
+  private baseUrl = 'https://apis.data.go.kr/1160100/service/GetKrxListedInfoService/getItemInfo';
 
   constructor() {
     this.apiKey = process.env.PUBLIC_DATA_API_KEY || '';
@@ -61,27 +61,25 @@ class PublicDataClient {
     }
 
     try {
-      // 단축코드 또는 종목명으로 검색
+      // 단축코드 또는 종목명으로 검색 (포함 검색)
       const params = new URLSearchParams({
         serviceKey: this.apiKey,
-        type: 'json',
         pageNo: String(pageNo),
         numOfRows: '100',
-        // 검색어 - 종목명 또는 단축코드
+        resultType: 'json',
+        // 검색어 - 종목명 또는 단축코드 (포함 검색 사용)
         ...(keyword.match(/^\d+$/)
-          ? { srtnCd: keyword } // 숫자면 코드로 검색
-          : { itmsNm: keyword }), // 아니면 종목명으로 검색
+          ? { likeSrtnCd: keyword } // 숫자면 코드로 포함 검색
+          : { likeItmsNm: keyword }), // 아니면 종목명으로 포함 검색
       });
 
-      const response = await fetch(
-        `${this.baseUrl}?${params.toString()}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const url = `${this.baseUrl}?${params.toString()}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         console.warn(`Public Data API request failed: ${response.statusText}`);
@@ -92,9 +90,9 @@ class PublicDataClient {
 
       if (
         data.response.header.resultCode !== '00' ||
-        !data.response.body.items.item
+        !data.response.body.items?.item
       ) {
-        console.warn('Public Data API returned no results');
+        console.warn(`Public Data API returned no results or error: ${data.response.header.resultMsg}`);
         return [];
       }
 
@@ -157,20 +155,18 @@ class PublicDataClient {
     try {
       const params = new URLSearchParams({
         serviceKey: this.apiKey,
-        type: 'json',
         pageNo: String(pageNo),
         numOfRows: '100',
+        resultType: 'json',
       });
 
-      const response = await fetch(
-        `${this.baseUrl}?${params.toString()}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const url = `${this.baseUrl}?${params.toString()}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         return [];
@@ -180,7 +176,7 @@ class PublicDataClient {
 
       if (
         data.response.header.resultCode !== '00' ||
-        !data.response.body.items.item
+        !data.response.body.items?.item
       ) {
         return [];
       }
