@@ -26,13 +26,13 @@ export const stockDatabase: Record<string, { ticker: string; koName: string }> =
   "삼성화학": { ticker: "009830.KS", koName: "삼성화학" },
   "삼성sdi": { ticker: "006400.KS", koName: "삼성SDI" },
   "삼성재": { ticker: "006400.KS", koName: "삼성SDI" },
-  "삼성바이오": { ticker: "207940.KS", koName: "삼성바이오로직스" },
+  "삼성바이오": { ticker: "207940.KQ", koName: "삼성바이오로직스" },
   "삼성전기": { ticker: "009150.KS", koName: "삼성전기" },
   "sk이노베이션": { ticker: "096770.KS", koName: "SK이노베이션" },
   "lg에너지솔루션": { ticker: "373220.KS", koName: "LG에너지솔루션" },
-  "한중엔시에스": { ticker: "054870.KS", koName: "한중엔시에스" },
-  "카카오뱅크": { ticker: "323410.KS", koName: "카카오뱅크" },
-  "카뱅": { ticker: "323410.KS", koName: "카카오뱅크" },
+  "한중엔시에스": { ticker: "054870.KQ", koName: "한중엔시에스" },
+  "카카오뱅크": { ticker: "323410.KQ", koName: "카카오뱅크" },
+  "카뱅": { ticker: "323410.KQ", koName: "카카오뱅크" },
 
   // ========== 한국 ETF ==========
   "tiger나스닥100": { ticker: "133690.KS", koName: "TIGER 나스닥100" },
