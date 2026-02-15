@@ -2,13 +2,13 @@
 // https://www.data.go.kr/data/15094775/openapi.do
 
 interface PublicDataStock {
-  basDt: string; // 기준일자
-  srtnCd: string; // 단축코드 (예: 005930)
-  isinCd: string; // ISIN코드
-  mktDiv: string; // 시장구분 (KOSPI, KOSDAQ, KONEX)
-  itmsNm: string; // 종목명
-  crno: string; // 법인등록번호
-  corpNm: string; // 법인명
+  basDt: string;   // 기준일자
+  srtnCd: string;  // 단축코드 (예: A005930 — 앞 'A' 제거 필요)
+  isinCd: string;  // ISIN코드
+  mrktCtg: string; // 시장구분 (KOSPI, KOSDAQ, KONEX) — 실제 필드명
+  itmsNm: string;  // 종목명
+  crno: string;    // 법인등록번호
+  corpNm: string;  // 법인명
 }
 
 interface PublicDataResponse {
@@ -100,12 +100,20 @@ class PublicDataClient {
         ? data.response.body.items.item
         : [data.response.body.items.item];
 
+      // API가 날짜별 이력을 반환하므로 srtnCd 기준으로 중복 제거
+      const seen = new Set<string>();
       return items
-        .filter((item) => item.srtnCd && item.itmsNm)
+        .filter((item) => {
+          if (!item.srtnCd || !item.itmsNm) return false;
+          const code = item.srtnCd.replace(/^A/, '');
+          if (seen.has(code)) return false;
+          seen.add(code);
+          return true;
+        })
         .map((item) => ({
-          code: item.srtnCd,
+          code: item.srtnCd.replace(/^A/, ''), // 앞 'A' 접두사 제거
           name: item.itmsNm,
-          market: this.normalizeMarket(item.mktDiv),
+          market: this.normalizeMarket(item.mrktCtg),
         }))
         .slice(0, 6); // 상위 6개만 반환
     } catch (error) {

@@ -1,8 +1,8 @@
 import YahooFinanceClass from 'yahoo-finance2';
 import { NextResponse } from 'next/server';
-import { findStock, getKoreanName } from '@/lib/korean-stocks';
-import kisClient from '@/lib/kis-client';
+import { getKoreanName } from '@/lib/korean-stocks';
 import publicDataClient from '@/lib/public-data-client';
+import krxOpenAPIClient from '@/lib/krx-open-api-client';
 
 const yahooFinance = new YahooFinanceClass();
 
@@ -17,31 +17,37 @@ export async function GET(request: Request) {
     const query = q.trim();
 
     try {
-        // 1. 먼저 한국 주식 database에서 확인
-        const stockInfo = findStock(query);
-
-        if (stockInfo) {
-            const koName = getKoreanName(stockInfo.ticker);
-            return NextResponse.json({
-                results: [
-                    {
-                        ticker: stockInfo.ticker,
-                        name: koName !== stockInfo.ticker ? koName : stockInfo.ticker,
-                        exchange: stockInfo.ticker.endsWith('.KQ') ? 'KOSDAQ' : 'KOSPI',
-                        type: 'korean',
-                        source: 'database',
-                    },
-                ],
-            });
-        }
-
-        // 2. 한국 주식으로 보이면 공공데이터포털 KRX API에서 검색
+        // 한국 주식으로 보이면 API에서 검색
         const isKoreanQuery =
             /^[가-힣a-zA-Z0-9\-]+$/.test(query) && // 한글이나 영문 포함
             !query.match(/\.[A-Z]{1,3}$/); // 티커 형식 아님
 
         if (isKoreanQuery) {
-            // 공공데이터포털 시도
+            // KRX Open API 시도 (우선순위 1)
+            try {
+                const krxOpenResults = await krxOpenAPIClient.searchStock(query);
+                if (krxOpenResults.length > 0) {
+                    return NextResponse.json({
+                        results: krxOpenResults.map((item) => {
+                            const exchangeCode = krxOpenAPIClient.getExchangeCode(item.market);
+                            const ticker = `${item.code}.${exchangeCode}`;
+                            const koName = getKoreanName(ticker);
+
+                            return {
+                                ticker,
+                                name: koName !== ticker ? koName : item.name,
+                                exchange: item.market,
+                                type: 'korean',
+                                source: 'krx-open',
+                            };
+                        }),
+                    });
+                }
+            } catch (error) {
+                console.warn('KRX Open API search failed:', error);
+            }
+
+            // 공공데이터포털 시도 (폴백)
             try {
                 const krxResults = await publicDataClient.searchStock(query);
                 if (krxResults.length > 0) {
@@ -65,23 +71,6 @@ export async function GET(request: Request) {
                 console.warn('KRX search failed:', error);
             }
 
-            // 공공데이터포털 실패 시 KIS API 시도
-            try {
-                const kisResults = await kisClient.searchStock(query);
-                if (kisResults.length > 0) {
-                    return NextResponse.json({
-                        results: kisResults.map((item) => ({
-                            ticker: `${item.symbol}.${item.exchange}`,
-                            name: item.name,
-                            exchange: item.market,
-                            type: 'korean',
-                            source: 'kis',
-                        })),
-                    });
-                }
-            } catch (error) {
-                console.warn('KIS search failed:', error);
-            }
         }
 
         // 3. 글로벌 주식으로 Yahoo Finance 검색
