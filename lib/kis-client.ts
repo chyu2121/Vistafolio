@@ -252,4 +252,4 @@ class KISClient {
 const kisClient = new KISClient();
 
 export default kisClient;
-export { KISClient, KISStock, KISSearchResult };
+export type { KISClient, KISStock, KISSearchResult };

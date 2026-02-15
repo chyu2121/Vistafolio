@@ -205,4 +205,4 @@ class PublicDataClient {
 const publicDataClient = new PublicDataClient();
 
 export default publicDataClient;
-export { PublicDataClient, PublicDataStock };
+export type { PublicDataClient, PublicDataStock };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -38,7 +38,7 @@ const GoogleIcon = ({ className }: { className?: string }) => (
     </svg>
 )
 
-export default function AuthPage() {
+function AuthContent() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
@@ -136,5 +136,13 @@ export default function AuthPage() {
                 </div>
             </motion.div>
         </div>
+    )
+}
+
+export default function AuthPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#111]" />}>
+            <AuthContent />
+        </Suspense>
     )
 }
