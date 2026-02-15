@@ -2,7 +2,6 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { motion, useScroll, useMotionValueEvent } from "motion/react"
 import { cn } from "@/lib/utils"
 
@@ -29,15 +28,10 @@ export default function Navbar() {
         >
             {/* Left: Logo */}
             <div className="flex items-center gap-2 z-10">
-                <Link href="/" className="flex items-center gap-3 group">
-                    <div className="relative h-[80px] w-[80px]">
-                        <Image
-                            src="/Vistafolio_CI_배경.png"
-                            alt="Vistafolio Logo"
-                            fill
-                            className="object-contain"
-                        />
-                    </div>
+                <Link href="/" className="flex items-center group">
+                    <span className="text-xl font-bold tracking-tight text-white hover:text-[#93C572] transition-colors duration-300">
+                        Vistafolio
+                    </span>
                 </Link>
             </div>
 
