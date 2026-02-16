@@ -8,6 +8,11 @@ const yahooFinance = new YahooFinanceClass();
 const getOpenAIClient = () => {
   // 런타임에 환경 변수 읽기
   const apiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+  console.log("[vista_news/analyze] API Key check:", {
+    hasOPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
+    hasNEXT_PUBLIC_OPENAI_API_KEY: !!process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    apiKeyLength: apiKey?.length ?? 0,
+  });
   if (!apiKey) {
     throw new Error(
       "OPENAI_API_KEY environment variable is not set. " +
