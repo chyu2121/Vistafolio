@@ -4,7 +4,14 @@ import OpenAI from "openai";
 
 const yahooFinance = new YahooFinanceClass();
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+// OpenAI 클라이언트는 런타임에 초기화 (빌드 시점에 API 키 필요 없음)
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY environment variable is not set");
+  }
+  return new OpenAI({ apiKey });
+};
 
 export type Market = "US" | "KR";
 export type Sentiment = "bullish" | "bearish" | "neutral";
@@ -125,6 +132,7 @@ Rules:
 - reason: brief Korean reason ending with → 호재/악재/중립
 - key_insight: Korean overall sentiment summary (2-3 sentences)`;
 
+    const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
