@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import { Newspaper, TrendingUp, TrendingDown, Minus, Search, RefreshCw, Bookmark } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Search, RefreshCw, Bookmark, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import NewsSearch from "./components/NewsSearch";
+import NewsSearch, { type SuggestionItem } from "./components/NewsSearch";
+import { stockDatabase } from "@/lib/korean-stocks";
 import NewsCard from "./components/NewsCard";
 import OverallSummary from "./components/OverallSummary";
 import NewsLoadingSkeleton from "./components/NewsLoadingSkeleton";
@@ -39,79 +40,6 @@ export interface AnalysisResult {
   key_insight: string;
 }
 
-// --- Mock data for UI preview ---
-const MOCK_RESULT: AnalysisResult = {
-  ticker: "AAPL",
-  companyName: "Apple Inc.",
-  market: "US",
-  analyzedAt: new Date().toISOString(),
-  overall_sentiment: "bullish",
-  key_insight:
-    "애플의 AI 기능 탑재 신제품 발표가 시장 기대를 상회하며 단기 주가 상승 모멘텀이 유지될 전망. 다만 중국 시장 수요 둔화는 지속적인 리스크 요인.",
-  news: [
-    {
-      title: "Apple Intelligence Features Drive Record iPhone Upgrade Cycle",
-      url: "#",
-      source: "Bloomberg",
-      publishedAt: new Date(Date.now() - 2 * 3_600_000).toISOString(),
-      score: 1.0,
-      sentiment: "bullish",
-      impact: "high",
-      summary:
-        "애플의 AI 기능이 역대 최대 아이폰 교체 수요를 이끌고 있음.\n애널리스트들은 2025 회계연도 매출 전망치를 상향 조정.\n공급망 파트너사들도 증산 준비에 나서며 긍정적 신호.",
-      reason: "핵심 제품 수요 증가 및 실적 전망 상향 → 호재",
-    },
-    {
-      title: "Apple Faces New EU Antitrust Probe Over App Store Practices",
-      url: "#",
-      source: "Reuters",
-      publishedAt: new Date(Date.now() - 5 * 3_600_000).toISOString(),
-      score: 0.95,
-      sentiment: "bearish",
-      impact: "medium",
-      summary:
-        "EU 당국이 앱스토어 수수료 정책 관련 신규 반독점 조사 착수.\n최대 글로벌 매출의 10% 벌금 부과 가능성 존재.\n규제 불확실성이 단기 투자심리 위축 요인으로 작용.",
-      reason: "규제 리스크 확대 및 잠재적 수익성 훼손 → 악재",
-    },
-    {
-      title: "Apple's Services Revenue Hits All-Time High in Q1 2025",
-      url: "#",
-      source: "CNBC",
-      publishedAt: new Date(Date.now() - 8 * 3_600_000).toISOString(),
-      score: 0.9,
-      sentiment: "bullish",
-      impact: "high",
-      summary:
-        "서비스 부문 매출이 분기 최고치를 경신하며 280억 달러 달성.\n앱스토어·구독 서비스 성장이 하드웨어 의존도 낮추는 데 기여.\n고마진 사업 비중 확대로 전사 수익성 개선 지속.",
-      reason: "고마진 서비스 부문의 지속적 성장 확인 → 호재",
-    },
-    {
-      title: "China iPhone Sales Decline for Third Consecutive Quarter",
-      url: "#",
-      source: "WSJ",
-      publishedAt: new Date(Date.now() - 14 * 3_600_000).toISOString(),
-      score: 0.7,
-      sentiment: "bearish",
-      impact: "medium",
-      summary:
-        "중국 내 아이폰 판매량이 3분기 연속 하락세 기록.\n화웨이·샤오미 등 현지 브랜드와의 경쟁 심화가 주요 원인.\n중국 매출 비중(약 19%)을 감안 시 전사 성장에 부담.",
-      reason: "핵심 시장 점유율 지속 하락 → 악재",
-    },
-    {
-      title: "Apple Announces $110B Share Buyback Program",
-      url: "#",
-      source: "MarketWatch",
-      publishedAt: new Date(Date.now() - 20 * 3_600_000).toISOString(),
-      score: 0.65,
-      sentiment: "bullish",
-      impact: "medium",
-      summary:
-        "역대 최대 규모인 1,100억 달러 자사주 매입 프로그램 발표.\n주주환원 강화로 EPS(주당순이익) 개선 효과 기대.\n풍부한 현금흐름이 적극적 자본배분 정책의 바탕.",
-      reason: "대규모 자사주 매입으로 주주가치 제고 → 호재",
-    },
-  ],
-};
-
 export default function VistaNewsPage() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -123,11 +51,44 @@ export default function VistaNewsPage() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const router = useRouter();
 
+  // 포트폴리오 빠른 검색 종목
+  const [portfolioSuggestions, setPortfolioSuggestions] = useState<SuggestionItem[]>([]);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user);
         setAvatarUrl(session.user.user_metadata?.avatar_url as string | undefined);
+
+        // 활성 포트폴리오 종목 로드
+        supabase
+          .from("portfolios")
+          .select("entries")
+          .eq("user_id", session.user.id)
+          .eq("is_active", true)
+          .then(({ data: rows }) => {
+            if (!rows || rows.length === 0) return;
+            // is_active 포트폴리오가 여러 개일 수 있으므로 전체 entries 합산
+            const entries = rows.flatMap((r: { entries: unknown[] }) => r.entries ?? []);
+            if (entries.length === 0) return;
+            // ticker → koName 역조회 맵 생성
+            const tickerToKoName: Record<string, string> = {};
+            for (const v of Object.values(stockDatabase)) {
+              if (!tickerToKoName[v.ticker]) tickerToKoName[v.ticker] = v.koName;
+            }
+            const items: SuggestionItem[] = (entries as { ticker: string; name: string; currency: string }[])
+              .map((e) => {
+                const isKR = e.currency === "KRW";
+                // KR ticker에서 .KS / .KQ suffix 제거
+                const cleanTicker = isKR ? e.ticker.replace(/\.(KS|KQ)$/, "") : e.ticker;
+                return {
+                  ticker: cleanTicker,
+                  name: isKR ? (tickerToKoName[e.ticker] ?? e.name) : e.name,
+                  market: isKR ? "KR" : "US",
+                };
+              });
+            setPortfolioSuggestions(items);
+          });
       }
     });
   }, []);
@@ -138,14 +99,28 @@ export default function VistaNewsPage() {
     router.replace("/");
   };
 
-  // UI 개발용 프리뷰 — 실제 API 연동 시 제거
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   const handleSearch = async (ticker: string, market: Market) => {
     setLoading(true);
     setHasSearched(true);
     setResult(null);
-    await new Promise((r) => setTimeout(r, 2200));
-    setResult({ ...MOCK_RESULT, ticker: ticker.toUpperCase(), market });
-    setLoading(false);
+    setSearchError(null);
+    try {
+      const res = await fetch(
+        `/api/vista_news/analyze?ticker=${encodeURIComponent(ticker)}&market=${market}`
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        setSearchError(data.error ?? "분석 중 오류가 발생했습니다.");
+      } else {
+        setResult(data as AnalysisResult);
+      }
+    } catch {
+      setSearchError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -168,7 +143,7 @@ export default function VistaNewsPage() {
 
         {/* Center: 페이지 타이틀 + 스크랩 링크 */}
         <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-6 md:flex">
-          <span className="text-sm font-medium text-[#93C572]">Vista News</span>
+          <span className="text-xl font-bold text-[#93C572]">Vista News</span>
           <Link
             href="/vista_news/scraps"
             className="flex items-center gap-1.5 text-sm font-medium text-neutral-500 transition-colors duration-200 hover:text-white"
@@ -224,7 +199,7 @@ export default function VistaNewsPage() {
 
       {/* Background glow */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-blue-500/5 blur-[120px]" />
+        <div className="absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-[#93C572]/5 blur-[120px]" />
         <div className="absolute bottom-0 right-1/4 h-[400px] w-[600px] rounded-full bg-[#93C572]/5 blur-[100px]" />
       </div>
 
@@ -238,7 +213,7 @@ export default function VistaNewsPage() {
         >
           <h1 className="mb-3 text-4xl font-bold tracking-tight md:text-5xl">
             Vista{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-[#93C572] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#b8e09a] to-[#93C572] bg-clip-text text-transparent">
               News
             </span>
           </h1>
@@ -255,7 +230,7 @@ export default function VistaNewsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15 }}
         >
-          <NewsSearch onSearch={handleSearch} loading={loading} />
+          <NewsSearch onSearch={handleSearch} loading={loading} portfolioSuggestions={portfolioSuggestions} />
         </motion.div>
 
         {/* Results */}
@@ -314,6 +289,19 @@ export default function VistaNewsPage() {
                 companyName={result.companyName}
                 market={result.market}
               />
+            </motion.div>
+          )}
+
+          {!loading && searchError && (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mt-10 flex items-center gap-3 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {searchError}
             </motion.div>
           )}
 

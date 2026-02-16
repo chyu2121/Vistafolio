@@ -227,7 +227,7 @@ export default function NewsCard({ news, isScrapped = false, isScrapLoading = fa
                   href={news.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-2 flex items-center gap-1 text-xs text-neutral-500 transition-colors duration-200 hover:text-blue-400"
+                  className="mt-2 flex items-center gap-1 text-xs text-neutral-500 transition-colors duration-200 hover:text-[#93C572]"
                 >
                   <ExternalLink className="h-3 w-3" />
                   원문 보기

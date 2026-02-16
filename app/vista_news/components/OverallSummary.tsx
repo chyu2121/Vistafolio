@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { TrendingUp, TrendingDown, Minus, Brain, CalendarClock } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, CalendarClock } from "lucide-react";
+import ClaudeIcon from "./ClaudeIcon";
 import type { Sentiment } from "../page";
 
 interface Props {
@@ -79,10 +80,7 @@ export default function OverallSummary({ sentiment, keyInsight, newsCount, analy
       {/* Header row */}
       <div className="mb-4 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          {/* Brain icon */}
-          <div className={`flex h-9 w-9 items-center justify-center rounded-xl border ${cfg.border} ${cfg.bgAccent}`}>
-            <Brain className={`h-4 w-4 ${cfg.text}`} />
-          </div>
+          <ClaudeIcon size={36} mode="static" />
           <div>
             <p className="text-xs font-medium text-neutral-500">AI 종합 분석</p>
             <p className={`text-sm font-semibold ${cfg.text}`}>

@@ -51,7 +51,10 @@ function AuthContent() {
         setLoading(true);
         setError(null);
 
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+        // 로컬 환경에서는 window.location.origin 사용, 프로덕션에서는 env 사용
+        const siteUrl = process.env.NODE_ENV === "production"
+            ? (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin)
+            : window.location.origin;
         const redirectTo = `${siteUrl}/auth/callback`;
 
         const { error } = await supabase.auth.signInWithOAuth({

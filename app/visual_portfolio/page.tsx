@@ -82,7 +82,7 @@ export default function VisualPortfolioPage() {
 
                 {/* Center: 페이지 타이틀 */}
                 <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8">
-                    <span className="text-sm font-medium text-pistachio">비주얼 포트폴리오</span>
+                    <span className="text-xl font-bold text-pistachio">비주얼 포트폴리오</span>
                 </div>
 
                 {/* Right: 포트폴리오 버튼 + 유저 */}

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Brain } from "lucide-react";
+import ClaudeIcon from "./ClaudeIcon";
 
 const STEPS = [
   "뉴스 데이터 수집 중",
@@ -29,18 +29,11 @@ export default function NewsLoadingSkeleton() {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-start gap-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5"
+        className="flex items-start gap-4 rounded-2xl border border-[#93C572]/20 bg-[#93C572]/5 p-5"
       >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          >
-            <Brain className="h-5 w-5 text-blue-400" />
-          </motion.div>
-        </div>
+        <ClaudeIcon size={40} mode="loading" />
         <div className="flex-1">
-          <p className="mb-3 text-sm font-medium text-blue-300">AI 분석 진행 중...</p>
+          <p className="mb-3 text-sm font-medium text-[#93C572]">AI 분석 진행 중...</p>
           <div className="space-y-2">
             {STEPS.map((step, i) => (
               <ProgressStep key={step} label={step} index={i} />
@@ -107,20 +100,20 @@ function ProgressStep({ label, index }: { label: string; index: number }) {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ delay: index * 0.5, type: "spring", stiffness: 500 }}
-        className="h-1.5 w-1.5 rounded-full bg-blue-400/60"
+        className="h-1.5 w-1.5 rounded-full bg-[#93C572]/60"
       />
       <span className="text-xs text-neutral-500">{label}</span>
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: "100%" }}
         transition={{ delay: index * 0.5 + 0.1, duration: 0.4 }}
-        className="h-px flex-1 bg-blue-500/20"
+        className="h-px flex-1 bg-[#93C572]/20"
       />
       <motion.span
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: index * 0.5 + 0.5 }}
-        className="text-xs text-blue-400/60"
+        className="text-xs text-[#93C572]/60"
       >
         ✓
       </motion.span>

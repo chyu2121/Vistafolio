@@ -30,6 +30,7 @@ const features: Feature[] = [
         title: "AI 뉴스 분석",
         description: "뉴스의 핵심만 3줄 요약, 호재와 악재를 AI가 판별해서 소개해드립니다.",
         icon: AiNewsIllustration,
+        href: "/vista_news",
     },
     {
         title: "스마트 예적금",
@@ -125,7 +126,7 @@ export default function Hero() {
                     href="/auth"
                     className="inline-flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-8 py-4 text-lg font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group"
                 >
-                    Get Started
+                    Login
                     <svg
                         className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
                         xmlns="http://www.w3.org/2000/svg"
