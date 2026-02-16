@@ -18,8 +18,11 @@ export default function Navbar() {
 
     const handleSignOut = async () => {
         setIsSigningOut(true)
-        await supabase.auth.signOut()
-        router.replace("/")
+        try {
+            await supabase.auth.signOut()
+        } finally {
+            window.location.href = "/"
+        }
     }
 
     useMotionValueEvent(scrollY, "change", (latest) => {
@@ -28,11 +31,16 @@ export default function Navbar() {
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                setUser(session.user)
-                setAvatarUrl(session.user.user_metadata?.avatar_url as string | undefined)
-            }
+            setUser(session?.user ?? null)
+            setAvatarUrl(session?.user.user_metadata?.avatar_url as string | undefined)
         })
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null)
+            setAvatarUrl(session?.user?.user_metadata?.avatar_url as string | undefined)
+        })
+
+        return () => subscription.unsubscribe()
     }, [])
 
     const links = [
