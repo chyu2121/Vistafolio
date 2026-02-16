@@ -122,6 +122,21 @@ export function isKoreanStock(ticker: string): boolean {
   return ticker.includes(".KS") || ticker.includes(".KQ");
 }
 
+// 한국 주식 로고 URL 매핑
+export const koreanStockLogos: Record<string, string> = {
+  // 주요 기업들의 공식 로고 또는 신뢰할 수 있는 출처
+  "005930.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Samsung_Logo.svg/1200px-Samsung_Logo.svg.png", // 삼성전자
+  "005380.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Hyundai_Motor_Company_logo.svg/1200px-Hyundai_Motor_Company_logo.svg.png", // 현대차
+  "000270.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Kia_logo.svg/1200px-Kia_logo.svg.png", // 기아
+  "066570.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/LG_logo_%282015%29.svg/1200px-LG_logo_%282015%29.svg.png", // LG전자
+  "035420.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Naver_logo.svg/1200px-Naver_logo.svg.png", // 네이버
+  "035720.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Kakao_logo.svg/1200px-Kakao_logo.svg.png", // 카카오
+  "000660.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/SK_Hynix_logo.svg/1200px-SK_Hynix_logo.svg.png", // SK하이닉스
+  "051910.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/LG_logo_%282015%29.svg/1200px-LG_logo_%282015%29.svg.png", // LG화학
+  "005490.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Posco_logo.svg/1200px-Posco_logo.svg.png", // 포스코
+  "323410.KS": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Kakao_Bank_logo.svg/1200px-Kakao_Bank_logo.svg.png", // 카카오뱅크
+};
+
 // 하위 호환성을 위한 함수
 export function findKoreanStock(query: string): string | null {
   const result = findStock(query);

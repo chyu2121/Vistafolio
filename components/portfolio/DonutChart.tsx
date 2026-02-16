@@ -228,28 +228,10 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
             .ease(d3.easeQuadOut)
             .attr("opacity", 1);
 
-        // 로고 이미지 (조각 중앙, 충분히 큰 조각에만)
-        g.selectAll(".logo")
-            .data(pieData.filter((d) => d.endAngle - d.startAngle > 0.25))
-            .enter()
-            .append("image")
-            .attr("class", "logo")
-            .attr("href", (d) => d.data.logoUrl)
-            .attr("width", 24)
-            .attr("height", 24)
-            .attr("x", -12)
-            .attr("y", -12)
-            .attr("transform", (d) => {
-                const [x, y] = midArcGen.centroid(d as any);
-                return `translate(${x},${y})`;
-            })
-            .attr("opacity", 0)
-            .transition()
-            .delay(500)
-            .duration(400)
-            .attr("opacity", 0.9);
+        // 지시선과 라벨을 위한 별도 그룹 생성 (로고보다 먼저 그리기)
+        const labelGroup = g.append("g").attr("class", "labels-group");
 
-        // 지시선 + 라벨 (비중 1.5% 이상 조각만)
+        // 지시선 + 라벨 그룹 생성 (비중 1.5% 이상 조각만)
         const labelData = pieData.filter((d) => d.data.value / total >= 0.015);
 
         // 라벨 y위치 충돌 방지 (같은 사이드 기준 정렬)
@@ -313,7 +295,7 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
             const shortName = d.data.name.length > 12 ? d.data.ticker : d.data.name;
 
             // 지시선 (꺾인 선)
-            g.append("polyline")
+            labelGroup.append("polyline")
                 .attr("points", `${posA[0]},${posA[1]} ${posB[0]},${posB[1]} ${posC[0]},${posC[1]}`)
                 .attr("fill", "none")
                 .attr("stroke", d.data.color)
@@ -321,7 +303,7 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
                 .attr("opacity", 0.7);
 
             // 끝점 원형 마커
-            g.append("circle")
+            labelGroup.append("circle")
                 .attr("cx", posC[0])
                 .attr("cy", posC[1])
                 .attr("r", 2.5)
@@ -331,7 +313,7 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
             const labelX = endX + (isRight ? 6 : -6);
 
             // 종목명 (상단)
-            g.append("text")
+            labelGroup.append("text")
                 .attr("x", labelX)
                 .attr("y", posC[1] - 5)
                 .attr("text-anchor", isRight ? "start" : "end")
@@ -342,7 +324,7 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
                 .text(shortName);
 
             // 티커 + 비중 (하단)
-            g.append("text")
+            labelGroup.append("text")
                 .attr("x", labelX)
                 .attr("y", posC[1] + 9)
                 .attr("text-anchor", isRight ? "start" : "end")
@@ -353,6 +335,27 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
 
         rightLabels.forEach((d, i) => drawLabel(d, i, rightLabels));
         leftLabels.forEach((d, i) => drawLabel(d, i, leftLabels));
+
+        // 로고 이미지 (조각 중앙, 충분히 큰 조각에만) - 지시선보다 위에 올라오도록 마지막에 그리기
+        g.selectAll(".logo")
+            .data(pieData.filter((d) => d.endAngle - d.startAngle > 0.25))
+            .enter()
+            .append("image")
+            .attr("class", "logo")
+            .attr("href", (d) => d.data.logoUrl)
+            .attr("width", 24)
+            .attr("height", 24)
+            .attr("x", -12)
+            .attr("y", -12)
+            .attr("transform", (d) => {
+                const [x, y] = midArcGen.centroid(d as any);
+                return `translate(${x},${y})`;
+            })
+            .attr("opacity", 0)
+            .transition()
+            .delay(500)
+            .duration(400)
+            .attr("opacity", 0.9);
 
         // 중앙 텍스트
         g.append("text")

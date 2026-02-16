@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { isKoreanStock } from "@/lib/korean-stocks";
+import { isKoreanStock, koreanStockLogos } from "@/lib/korean-stocks";
 
 export interface PortfolioEntry {
     id: string;
@@ -29,11 +29,14 @@ const CACHE_TTL = 30_000; // 30초
 const EXCHANGE_RATE_CACHE_TTL = 3600000; // 1시간
 
 function getLogoUrl(ticker: string): string {
-    // 한국 주식의 경우 거래소 코드 제거
+    // 한국 주식의 경우 매핑된 로고 사용
     if (isKoreanStock(ticker)) {
+        // 정확한 티커로 매핑 확인
+        if (koreanStockLogos[ticker]) {
+            return koreanStockLogos[ticker];
+        }
+        // 매핑되지 않은 한국 주식은 parqet 폴백
         const base = ticker.split(".")[0];
-        // 한국 주식은 parqet에서 로고를 완전히 가져올 수 없으므로
-        // UI의 onError 처리에서 자동으로 숨겨집니다
         return `https://assets.parqet.com/logos/symbol/${base}?format=png`;
     }
 

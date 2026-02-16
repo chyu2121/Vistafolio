@@ -1,17 +1,39 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion, useScroll, useMotionValueEvent } from "motion/react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabaseClient"
+import type { User } from "@supabase/supabase-js"
 
 export default function Navbar() {
     const { scrollY } = useScroll()
     const [isScrolled, setIsScrolled] = useState(false)
+    const [user, setUser] = useState<User | null>(null)
+    const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined)
+    const [isSigningOut, setIsSigningOut] = useState(false)
+    const router = useRouter()
+
+    const handleSignOut = async () => {
+        setIsSigningOut(true)
+        await supabase.auth.signOut()
+        router.replace("/")
+    }
 
     useMotionValueEvent(scrollY, "change", (latest) => {
         setIsScrolled(latest > 20)
     })
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                setUser(session.user)
+                setAvatarUrl(session.user.user_metadata?.avatar_url as string | undefined)
+            }
+        })
+    }, [])
 
     const links = [
         { name: "Features", href: "#features" },
@@ -24,7 +46,7 @@ export default function Navbar() {
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.5 }}
-            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 transition-all duration-300 md:px-12 bg-transparent"
+            className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 transition-all duration-300 md:px-12 bg-gradient-to-b from-black/5 to-black/0 backdrop-blur-sm border-b border-white/0"
         >
             {/* Left: Logo */}
             <div className="flex items-center gap-2 z-10">
@@ -48,14 +70,45 @@ export default function Navbar() {
                 ))}
             </div>
 
-            {/* Right: Get Started Button */}
-            <div className="flex items-center gap-4 z-10">
-                <Link href="/auth">
-                    <button className="hidden md:block rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-                        Get Started
-                    </button>
-                    {/* Mobile only icon/button if needed, but for now just the button on desktop */}
-                </Link>
+            {/* Right: Get Started Button or User Profile */}
+            <div className="flex items-center gap-3 z-10">
+                {user ? (
+                    <>
+                        <Link href="/dashboard">
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt={user.email}
+                                    className="hidden md:block h-8 w-8 rounded-full object-cover ring-2 ring-white/20 cursor-pointer hover:ring-[#93C572]/50 transition-all"
+                                    referrerPolicy="no-referrer"
+                                />
+                            ) : (
+                                <div className="hidden md:flex h-8 w-8 items-center justify-center rounded-full bg-[#93C572]/20 text-xs font-semibold text-[#93C572] ring-2 ring-[#93C572]/30 cursor-pointer hover:ring-[#93C572]/50 transition-all">
+                                    {(user.user_metadata?.full_name as string)?.[0]?.toUpperCase() ?? "U"}
+                                </div>
+                            )}
+                        </Link>
+                        <button
+                            onClick={handleSignOut}
+                            disabled={isSigningOut}
+                            className="hidden md:flex items-center gap-2 rounded-lg border border-[#93C572]/40 bg-[#93C572]/10 px-3 py-2 text-xs font-medium text-[#93C572] transition-all hover:border-[#93C572]/80 hover:bg-[#93C572]/30 hover:text-white hover:shadow-[0_0_16px_rgba(147,197,114,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSigningOut ? (
+                                <div className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                            ) : (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                            )}
+                        </button>
+                    </>
+                ) : (
+                    <Link href="/auth">
+                        <button className="hidden md:block rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                            Get Started
+                        </button>
+                    </Link>
+                )}
 
                 {/* Mobile Menu Button */}
                 <button className="md:hidden p-2 text-white hover:bg-white/10 rounded-full transition-colors">
