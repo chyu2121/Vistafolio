@@ -51,12 +51,8 @@ function AuthContent() {
         setLoading(true);
         setError(null);
 
-        let redirectTo = `${window.location.origin}/auth/callback`;
-
-        // vistafolio.vercel.app는 vistafolio.kr로 리다이렉트
-        if (redirectTo.includes('vistafolio.vercel.app')) {
-            redirectTo = 'https://vistafolio.kr/auth/callback';
-        }
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+        const redirectTo = `${siteUrl}/auth/callback`;
 
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
