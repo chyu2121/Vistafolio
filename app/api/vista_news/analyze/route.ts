@@ -6,9 +6,13 @@ const yahooFinance = new YahooFinanceClass();
 
 // OpenAI 클라이언트는 런타임에 초기화 (빌드 시점에 API 키 필요 없음)
 const getOpenAIClient = () => {
-  const apiKey = process.env.OPENAI_API_KEY;
+  // 런타임에 환경 변수 읽기
+  const apiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY environment variable is not set");
+    throw new Error(
+      "OPENAI_API_KEY environment variable is not set. " +
+      "Please set the environment variable in your deployment platform."
+    );
   }
   return new OpenAI({ apiKey });
 };
