@@ -114,7 +114,7 @@ export default function StockInputPanel({ onAdd }: StockInputPanelProps) {
                                     : "text-neutral-400 hover:text-white"
                             }`}
                         >
-                            {c === "USD" ? "🇺🇸 USD" : "🇰🇷 KRW"}
+                            {c === "USD" ? "USD" : "KRW"}
                         </button>
                     ))}
                 </div>

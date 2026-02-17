@@ -191,7 +191,7 @@ export default function VisualPortfolioPage() {
                                     : "text-neutral-400 hover:text-white"
                                     }`}
                             >
-                                {currency === "USD" ? "🇺🇸 USD" : "🇰🇷 KRW"}
+                                {currency === "USD" ? "USD" : "KRW"}
                             </button>
                         ))}
                     </div>

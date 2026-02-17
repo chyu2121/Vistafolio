@@ -176,9 +176,7 @@ export default function PortfolioTable({ entries, onRemove, displayCurrency, exc
                                                 }}
                                             />
                                             <span className="font-medium text-white">
-                                                {getKoreanName(entry.ticker) !== entry.ticker
-                                                    ? getKoreanName(entry.ticker)
-                                                    : entry.name}
+                                                {getKoreanName(entry.ticker) ?? entry.name}
                                             </span>
                                         </div>
                                     </td>

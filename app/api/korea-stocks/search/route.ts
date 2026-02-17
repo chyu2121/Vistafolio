@@ -24,7 +24,7 @@ export async function GET(request: Request) {
             results = [
                 {
                     ticker: stockInfo.ticker,
-                    name: koName !== stockInfo.ticker ? koName : stockInfo.ticker,
+                    name: koName ?? stockInfo.koName,
                     exchange: stockInfo.ticker.endsWith('.KQ') ? 'KOSDAQ' : 'KOSPI',
                 },
             ];
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
                 return {
                     ticker: fullTicker,
-                    name: koName !== fullTicker ? koName : item.name,
+                    name: koName ?? item.name,
                     exchange: item.market,
                 };
             });

@@ -142,7 +142,7 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
             .map((e) => ({
                 ticker: e.ticker,
                 // 한글명으로 표시 (있으면 한글명, 없으면 원래 이름)
-                name: getKoreanName(e.ticker) !== e.ticker ? getKoreanName(e.ticker) : e.name,
+                name: getKoreanName(e.ticker) ?? e.name,
                 value: e.quantity * convertPrice(e.currentPrice ?? 0, e.currency, displayCurrency),
                 logoUrl: e.logoUrl,
                 color: colorCacheRef.current[e.ticker] ?? "",

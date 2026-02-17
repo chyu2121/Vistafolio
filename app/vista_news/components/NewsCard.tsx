@@ -123,18 +123,18 @@ export default function NewsCard({ news, isScrapped = false, isScrapLoading = fa
               onClick={() => onScrap(news)}
               disabled={isScrapLoading}
               title={isScrapped ? "스크랩 취소" : "스크랩"}
-              className={`flex items-center justify-center rounded-lg p-1.5 transition-all duration-200 disabled:opacity-50 ${
+              className={`flex items-center justify-center rounded-lg p-2 transition-all duration-200 disabled:opacity-50 ${
                 isScrapped
-                  ? "text-[#93C572] hover:text-[#93C572]/60"
-                  : "text-neutral-600 hover:text-[#93C572]"
+                  ? "border border-[#93C572]/40 bg-[#93C572]/10 text-[#93C572] hover:border-[#93C572]/60 hover:bg-[#93C572]/20"
+                  : "border border-neutral-600/40 bg-neutral-600/10 text-neutral-600 hover:border-[#93C572]/60 hover:bg-[#93C572]/10 hover:text-[#93C572]"
               }`}
             >
               {isScrapLoading ? (
-                <div className="h-3.5 w-3.5 animate-spin rounded-full border border-current border-t-transparent" />
+                <div className="h-4 w-4 animate-spin rounded-full border border-current border-t-transparent" />
               ) : isScrapped ? (
-                <BookmarkCheck className="h-3.5 w-3.5" />
+                <BookmarkCheck className="h-4 w-4" />
               ) : (
-                <Bookmark className="h-3.5 w-3.5" />
+                <Bookmark className="h-4 w-4" />
               )}
             </button>
           )}

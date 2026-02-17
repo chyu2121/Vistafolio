@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
             return {
                 ticker,
-                name: koName !== ticker ? koName : stock.name,
+                name: koName ?? stock.name,
                 exchange: stock.market,
                 source: 'krx',
             };

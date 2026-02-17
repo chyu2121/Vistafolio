@@ -61,17 +61,20 @@ class PublicDataClient {
     }
 
     try {
-      // 단축코드 또는 종목명으로 검색 (포함 검색)
       const params = new URLSearchParams({
         serviceKey: this.apiKey,
         pageNo: String(pageNo),
         numOfRows: '100',
         resultType: 'json',
-        // 검색어 - 종목명 또는 단축코드 (포함 검색 사용)
-        ...(keyword.match(/^\d+$/)
-          ? { likeSrtnCd: keyword } // 숫자면 코드로 포함 검색
-          : { likeItmsNm: keyword }), // 아니면 종목명으로 포함 검색
       });
+
+      // 검색어 형식 판단: 숫자만 있으면 코드, 그 외 종목명
+      const isNumericKeyword = /^\d+$/.test(keyword);
+      if (isNumericKeyword) {
+        params.append('likeSrtnCd', keyword);
+      } else {
+        params.append('likeItmsNm', keyword);
+      }
 
       const url = `${this.baseUrl}?${params.toString()}`;
       const response = await fetch(url, {
@@ -100,22 +103,40 @@ class PublicDataClient {
         ? data.response.body.items.item
         : [data.response.body.items.item];
 
-      // API가 날짜별 이력을 반환하므로 srtnCd 기준으로 중복 제거
+      // 중복 제거 및 필터링
       const seen = new Set<string>();
-      return items
-        .filter((item) => {
-          if (!item.srtnCd || !item.itmsNm) return false;
-          const code = item.srtnCd.replace(/^A/, '');
-          if (seen.has(code)) return false;
-          seen.add(code);
-          return true;
-        })
-        .map((item) => ({
-          code: item.srtnCd.replace(/^A/, ''), // 앞 'A' 접두사 제거
+      const filtered: Array<{
+        code: string;
+        name: string;
+        market: string;
+      }> = [];
+
+      for (const item of items) {
+        // 필수 필드 확인
+        if (!item.srtnCd || !item.itmsNm || !item.mrktCtg) continue;
+
+        const code = item.srtnCd.replace(/^A/, '');
+
+        // 중복 제거 (srtnCd 기준)
+        if (seen.has(code)) continue;
+        seen.add(code);
+
+        // 숫자 검색일 때: 정확한 코드 매칭
+        if (isNumericKeyword) {
+          if (code !== keyword && !code.startsWith(keyword)) continue;
+        }
+
+        filtered.push({
+          code,
           name: item.itmsNm,
           market: this.normalizeMarket(item.mrktCtg),
-        }))
-        .slice(0, 6); // 상위 6개만 반환
+        });
+
+        // 6개를 찾으면 즉시 반환 (더 이상 처리 안 함)
+        if (filtered.length >= 6) break;
+      }
+
+      return filtered;
     } catch (error) {
       console.error(`Public Data search error for "${keyword}":`, error);
       return [];

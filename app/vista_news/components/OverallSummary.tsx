@@ -1,15 +1,16 @@
 "use client";
 
 import { motion } from "motion/react";
-import { TrendingUp, TrendingDown, Minus, CalendarClock } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, CalendarClock, Building2, Layers } from "lucide-react";
 import ClaudeIcon from "./ClaudeIcon";
-import type { Sentiment } from "../page";
+import type { Sentiment, CompanyProfile } from "../page";
 
 interface Props {
   sentiment: Sentiment;
   keyInsight: string;
   newsCount: number;
   analyzedAt: string;
+  companyProfile?: CompanyProfile | null;
 }
 
 const CONFIG: Record<
@@ -62,7 +63,7 @@ function formatTime(iso: string): string {
   });
 }
 
-export default function OverallSummary({ sentiment, keyInsight, newsCount, analyzedAt }: Props) {
+export default function OverallSummary({ sentiment, keyInsight, newsCount, analyzedAt, companyProfile }: Props) {
   const cfg = CONFIG[sentiment];
 
   return (
@@ -98,6 +99,28 @@ export default function OverallSummary({ sentiment, keyInsight, newsCount, analy
 
       {/* Divider */}
       <div className={`mb-4 h-px w-full ${cfg.bgAccent}`} />
+
+      {/* Company profile */}
+      {companyProfile && (
+        <div className="mb-4 rounded-xl border border-white/8 bg-white/4 p-4">
+          <p className="mb-3 text-xs font-medium text-neutral-500">기업 정보</p>
+          <div className="mb-3 flex flex-wrap gap-2">
+            {companyProfile.sector && (
+              <span className="flex items-center gap-1 rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-xs text-neutral-300">
+                <Layers className="h-3 w-3 text-neutral-500" />
+                {companyProfile.sector}
+              </span>
+            )}
+            {companyProfile.industry && (
+              <span className="flex items-center gap-1 rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-xs text-neutral-300">
+                <Building2 className="h-3 w-3 text-neutral-500" />
+                {companyProfile.industry}
+              </span>
+            )}
+          </div>
+          <p className="text-sm leading-relaxed text-neutral-300">{companyProfile.description}</p>
+        </div>
+      )}
 
       {/* Key insight */}
       <div className="mb-4">

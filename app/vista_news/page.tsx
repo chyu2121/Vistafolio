@@ -30,6 +30,12 @@ export interface AnalyzedNews {
   reason: string;
 }
 
+export interface CompanyProfile {
+  sector: string;
+  industry: string;
+  description: string;
+}
+
 export interface AnalysisResult {
   ticker: string;
   companyName: string;
@@ -38,6 +44,7 @@ export interface AnalysisResult {
   news: AnalyzedNews[];
   overall_sentiment: Sentiment;
   key_insight: string;
+  company_profile: CompanyProfile | null;
 }
 
 export default function VistaNewsPage() {
@@ -280,6 +287,7 @@ export default function VistaNewsPage() {
                 keyInsight={result.key_insight}
                 newsCount={result.news.length}
                 analyzedAt={result.analyzedAt}
+                companyProfile={result.company_profile}
               />
 
               {/* Sentiment filter chips */}

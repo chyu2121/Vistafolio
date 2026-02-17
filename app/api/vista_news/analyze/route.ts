@@ -26,6 +26,12 @@ export type Market = "US" | "KR";
 export type Sentiment = "bullish" | "bearish" | "neutral";
 export type Impact = "high" | "medium" | "low";
 
+export interface CompanyProfile {
+  sector: string;
+  industry: string;
+  description: string;
+}
+
 interface RawNewsItem {
   title?: string;
   link?: string;
@@ -74,10 +80,11 @@ export async function GET(request: Request) {
   const symbol = toYahooSymbol(ticker.toUpperCase(), market);
 
   try {
-    // 1. 회사명 + 뉴스 가져오기
-    const [quoteData, searchData] = await Promise.allSettled([
+    // 1. 회사명 + 뉴스 + 기업 정보 가져오기
+    const [quoteData, searchData, summaryData] = await Promise.allSettled([
       yahooFinance.quote(symbol),
       yahooFinance.search(symbol, { newsCount: 10, quotesCount: 1 }),
+      yahooFinance.quoteSummary(symbol, { modules: ["assetProfile", "summaryProfile"] }),
     ]);
 
     // 회사명
@@ -93,6 +100,23 @@ export async function GET(request: Request) {
     let rawNews: RawNewsItem[] = [];
     if (searchData.status === "fulfilled" && searchData.value.news) {
       rawNews = searchData.value.news as RawNewsItem[];
+    }
+
+    // 기업 프로필 원본 데이터
+    let rawSector = "";
+    let rawIndustry = "";
+    let rawLongDescription = "";
+    if (summaryData.status === "fulfilled") {
+      const profile =
+        (summaryData.value as { assetProfile?: { sector?: string; industry?: string; longBusinessSummary?: string } })
+          .assetProfile ??
+        (summaryData.value as { summaryProfile?: { sector?: string; industry?: string; longBusinessSummary?: string } })
+          .summaryProfile;
+      if (profile) {
+        rawSector = profile.sector ?? "";
+        rawIndustry = profile.industry ?? "";
+        rawLongDescription = profile.longBusinessSummary ?? "";
+      }
     }
 
     if (rawNews.length === 0) {
@@ -112,8 +136,15 @@ export async function GET(request: Request) {
 
     const systemPrompt = `You are a professional stock analyst. Respond ONLY with valid JSON, no markdown, no explanation.`;
 
-    const userPrompt = `Analyze the following news articles for ${companyName} (${symbol}, ${market} market).
+    const profileContext = rawSector || rawIndustry || rawLongDescription
+      ? `Company profile data from Yahoo Finance:
+- Sector: ${rawSector || "N/A"}
+- Industry: ${rawIndustry || "N/A"}
+- Business summary: ${rawLongDescription ? rawLongDescription.slice(0, 600) : "N/A"}`
+      : "";
 
+    const userPrompt = `Analyze the following news articles for ${companyName} (${symbol}, ${market} market).
+${profileContext ? `\n${profileContext}\n` : ""}
 News articles:
 ${newsListText}
 
@@ -122,6 +153,11 @@ Return JSON in exactly this format:
   "companyName": "${companyName}",
   "overall_sentiment": "bullish" | "bearish" | "neutral",
   "key_insight": "2-3 sentence overall insight in Korean",
+  "company_profile": {
+    "sector": "섹터명 in Korean (e.g. 기술, 금융, 헬스케어, 에너지, 소비재, 산업재, 소재, 부동산, 유틸리티, 통신, 필수소비재)",
+    "industry": "업종명 in Korean (e.g. 반도체, 전기차, 클라우드 소프트웨어, 바이오테크, 투자은행)",
+    "description": "이 기업이 무엇을 하는 회사인지 사회초년생도 이해할 수 있게 2~3문장으로 쉽게 설명 (한국어)"
+  },
   "news": [
     {
       "index": 1,
@@ -139,7 +175,8 @@ Rules:
 - impact: high=major earnings/product/regulatory, medium=moderate, low=minor
 - summary: Korean translation with 3 bullet points separated by \\n
 - reason: brief Korean reason ending with → 호재/악재/중립
-- key_insight: Korean overall sentiment summary (2-3 sentences)`;
+- key_insight: Korean overall sentiment summary (2-3 sentences)
+- company_profile.description: avoid jargon, explain as if to a first-time investor in their 20s`;
 
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
@@ -196,6 +233,7 @@ Rules:
       news: analyzedNews,
       overall_sentiment: analysisJson.overall_sentiment ?? "neutral",
       key_insight: analysisJson.key_insight ?? "",
+      company_profile: analysisJson.company_profile ?? null,
     });
   } catch (err: unknown) {
     console.error("[vista_news/analyze] error:", err);
