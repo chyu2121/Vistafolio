@@ -82,7 +82,7 @@ export default function VisualPortfolioPage() {
 
                 {/* Center: 페이지 타이틀 */}
                 <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8">
-                    <span className="text-xl font-bold text-pistachio">비주얼 포트폴리오</span>
+                    <span className="text-xl font-bold text-[#93C572]">Visual Portfolio</span>
                 </div>
 
                 {/* Right: 포트폴리오 버튼 + 유저 */}
@@ -177,8 +177,28 @@ export default function VisualPortfolioPage() {
                 </div>
             </motion.nav>
 
-            <main className="mx-auto max-w-[1400px] space-y-6 px-6 py-8 pt-20">
+            <main className="mx-auto max-w-[1400px] space-y-6 px-6 pb-8 pt-32">
+                {/* Hero Header */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="mb-4 text-center"
+                >
+                    <h1 className="mb-3 text-4xl font-bold tracking-tight md:text-5xl">
+                        Visual{" "}
+                        <span className="bg-gradient-to-r from-[#b8e09a] to-[#93C572] bg-clip-text text-transparent">
+                            Portfolio
+                        </span>
+                    </h1>
+                    <p className="mx-auto max-w-md text-sm text-neutral-400">
+                        보유 종목을 도넛 차트로 한눈에 시각화.<br />
+                        실시간 시세와 수익률을 즉시 확인하는 스마트 포트폴리오 트래커.
+                    </p>
+                </motion.div>
+
                 {/* 도넛 차트 영역 */}
+
                 <section className="relative">
                     <DonutChart entries={entries} displayCurrency={displayCurrency} exchangeRate={exchangeRate} colorSeed={colorSeed} />
                     <div className="absolute top-4 right-4 flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 p-1">

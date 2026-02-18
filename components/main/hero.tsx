@@ -36,11 +36,21 @@ const features: Feature[] = [
         title: "스마트 예적금",
         description: "최신 특판 비교부터 우대 조건 분석, 세후 실수령액 계산까지 한번에 끝내드립니다.",
         icon: SavingsIllustration,
+        href: "/vista_savings",
     },
 ]
 
 export default function Hero() {
     const containerRef = useRef<HTMLDivElement>(null)
+    const [user, setUser] = React.useState<any>(null)
+
+    React.useEffect(() => {
+        import("@/lib/supabaseClient").then(({ supabase }) => {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                setUser(session?.user ?? null)
+            })
+        })
+    }, [])
 
     return (
         <div
@@ -116,34 +126,34 @@ export default function Hero() {
                 })}
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="mt-16 z-10"
-            >
-                <a
-                    href="/auth"
-                    className="inline-flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-8 py-4 text-lg font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group"
+            {!user && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.5 }}
+                    className="mt-16 z-10"
                 >
-                    Login
-                    <svg
-                        className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                    <a
+                        href="/auth"
+                        className="inline-flex items-center justify-center rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-8 py-4 text-lg font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group"
                     >
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                </a>
-            </motion.div>
-
-
+                        Login
+                        <svg
+                            className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                            <polyline points="12 5 19 12 12 19" />
+                        </svg>
+                    </a>
+                </motion.div>
+            )}
         </div>
     )
 }
