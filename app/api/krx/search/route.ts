@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import publicDataClient from '@/lib/public-data-client';
-import { getKoreanName } from '@/lib/korean-stocks';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -23,11 +22,10 @@ export async function GET(request: Request) {
         const results = stocks.map((stock) => {
             const exchangeCode = publicDataClient.getExchangeCode(stock.market);
             const ticker = `${stock.code}.${exchangeCode}`;
-            const koName = getKoreanName(ticker);
 
             return {
                 ticker,
-                name: koName ?? stock.name,
+                name: stock.name,
                 exchange: stock.market,
                 source: 'krx',
             };

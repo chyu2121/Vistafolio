@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { PortfolioEntry } from "@/hooks/usePortfolio";
-import { getKoreanName } from "@/lib/korean-stocks";
+
 
 interface PortfolioTableProps {
     entries: PortfolioEntry[];
@@ -176,7 +176,7 @@ export default function PortfolioTable({ entries, onRemove, displayCurrency, exc
                                                 }}
                                             />
                                             <span className="font-medium text-white">
-                                                {getKoreanName(entry.ticker) ?? entry.name}
+                                                {entry.name}
                                             </span>
                                         </div>
                                     </td>

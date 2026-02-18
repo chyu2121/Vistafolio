@@ -1,6 +1,6 @@
 import YahooFinanceClass from 'yahoo-finance2';
 import { NextResponse } from 'next/server';
-import { getKoreanName, searchStocks } from '@/lib/korean-stocks';
+import { koreanStockLogos } from '@/lib/korean-stocks';
 import publicDataClient from '@/lib/public-data-client';
 import krxOpenAPIClient from '@/lib/krx-open-api-client';
 
@@ -17,33 +17,41 @@ export async function GET(request: Request) {
     const query = q.trim();
 
     try {
-        // 한국 주식으로 보이면 API에서 검색
-        const isKoreanQuery =
-            /^[가-힣a-zA-Z0-9\-]+$/.test(query) && // 한글이나 영문 포함
-            !query.match(/\.[A-Z]{1,3}$/); // 티커 형식 아님
+        // 한국 주식으로 판단하는 조건:
+        // 1. 한글 포함
+        // 2. 6자리 숫자 (종목코드 직접 입력)
+        // 3. .KS / .KQ / .KN 접미사 (한국 티커 직접 입력)
+        const isKoreanTicker = /\.(KS|KQ|KN)$/i.test(query);
+        const isKoreanCode = /^\d{6}$/.test(query);
+        const hasKorean = /[가-힣]/.test(query);
+        const isKoreanQuery = hasKorean || isKoreanCode || isKoreanTicker;
+
+        // .KS/.KQ/.KN 형식이면 접미사 제거 후 코드만 추출해 검색
+        const searchQuery = isKoreanTicker ? query.replace(/\.(KS|KQ|KN)$/i, '') : query;
 
         if (isKoreanQuery) {
             // KRX Open API 시도 (우선순위 1)
             try {
-                const krxOpenResults = await krxOpenAPIClient.searchStock(query);
+                const krxOpenResults = await krxOpenAPIClient.searchStock(searchQuery);
                 if (krxOpenResults.length > 0) {
                     console.log(`Search "${query}": Found ${krxOpenResults.length} results from KRX Open API`);
                     return NextResponse.json({
                         results: krxOpenResults.map((item) => {
                             const exchangeCode = krxOpenAPIClient.getExchangeCode(item.market);
                             const ticker = `${item.code}.${exchangeCode}`;
-                            const koName = getKoreanName(ticker);
 
                             return {
                                 ticker,
-                                // KRX 공식 종목명 우선, 로컬 DB는 보조
-                                name: koName || item.name,
+                                name: item.name,
                                 exchange: item.market,
                                 type: 'korean',
                                 source: 'krx-open',
+                                logo: koreanStockLogos[ticker],
                             };
                         }),
                     });
+                } else {
+                    console.log(`Search "${query}": KRX Open API returned no results`);
                 }
             } catch (error) {
                 console.warn('KRX Open API search failed:', error);
@@ -51,60 +59,59 @@ export async function GET(request: Request) {
 
             // 공공데이터포털 시도 (폴백)
             try {
-                const krxResults = await publicDataClient.searchStock(query);
+                const krxResults = await publicDataClient.searchStock(searchQuery);
                 if (krxResults.length > 0) {
                     console.log(`Search "${query}": Found ${krxResults.length} results from Public Data API`);
                     return NextResponse.json({
                         results: krxResults.map((item) => {
                             const exchangeCode = publicDataClient.getExchangeCode(item.market);
                             const ticker = `${item.code}.${exchangeCode}`;
-                            const koName = getKoreanName(ticker);
 
                             return {
                                 ticker,
-                                // 공공데이터포털 공식 종목명 우선, 로컬 DB는 보조
-                                name: koName || item.name,
+                                name: item.name,
                                 exchange: item.market,
                                 type: 'korean',
                                 source: 'public-data',
+                                logo: koreanStockLogos[ticker],
                             };
                         }),
                     });
+                } else {
+                    console.log(`Search "${query}": Public Data API returned no results`);
                 }
             } catch (error) {
                 console.warn('Public Data API search failed:', error);
             }
 
-            // 로컬 DB 폴백 (KRX/공공데이터 모두 실패 시)
-            const localResults = searchStocks(query);
-            if (localResults.length > 0) {
-                console.log(`Search "${query}": Found ${localResults.length} results from local DB`);
-                return NextResponse.json({
-                    results: localResults.map((item) => ({
-                        ticker: item.ticker,
-                        name: item.name,
-                        exchange: item.market,
-                        type: 'korean',
-                        source: 'local',
-                    })),
-                });
-            }
+            // 한국 쿼리인데 어디서도 결과를 찾지 못한 경우 빈 결과 반환
+            // Yahoo Finance에 한국주식 검색을 위임하지 않음
+            console.log(`Search "${query}": No Korean stock results found`);
+            return NextResponse.json({ results: [] });
         }
 
-        // 3. 글로벌 주식으로 Yahoo Finance 검색
+        // 글로벌 주식으로 Yahoo Finance 검색 (한국 쿼리가 아닌 경우에만)
         const result = await yahooFinance.search(query, {
             newsCount: 0,
             quotesCount: 8,
         });
 
         const results = (result.quotes || [])
-            .filter((item: any) => (item.quoteType === 'EQUITY' || item.quoteType === 'ETF') && item.symbol)
+            .filter((item: any) => {
+                if (!(item.quoteType === 'EQUITY' || item.quoteType === 'ETF') || !item.symbol) return false;
+                // 한국 주식 티커(.KS, .KQ, .KN)는 Yahoo 결과에서 제외
+                const sym = item.symbol as string;
+                if (sym.endsWith('.KS') || sym.endsWith('.KQ') || sym.endsWith('.KN')) return false;
+                return true;
+            })
             .slice(0, 6)
             .map((item: any) => {
                 const ticker = item.symbol as string;
+                const displayName = item.longname || item.shortname || ticker;
+
                 return {
                     ticker,
-                    name: item.longname || item.shortname || ticker,
+                    name: displayName,
                     exchange: item.exchange || '',
                     type: 'global',
                     source: 'yahoo',

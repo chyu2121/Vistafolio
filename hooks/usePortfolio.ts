@@ -121,10 +121,12 @@ export function usePortfolio() {
             avgPrice: number
         ) => {
             const currentPrice = await fetchPrice(ticker);
+            // 검색 시 공공데이터포털/KRX에서 받아온 name이 이미 올바른 종목명
+            const displayName = name;
             const newEntry: PortfolioEntry = {
                 id: `${ticker}-${Date.now()}`,
                 ticker,
-                name,
+                name: displayName,
                 currency,
                 quantity,
                 avgPrice,
@@ -248,7 +250,10 @@ export function usePortfolio() {
 
             if (error) throw error;
 
-            setEntries(portfolio.entries || []);
+            // entry.name에 공공데이터포털/KRX에서 받아온 종목명이 이미 저장되어 있음
+            const convertedEntries = (portfolio.entries || []).map((entry: PortfolioEntry) => entry);
+
+            setEntries(convertedEntries);
             setDisplayCurrency(portfolio.display_currency || "USD");
 
             // 활성 포트폴리오로 표시

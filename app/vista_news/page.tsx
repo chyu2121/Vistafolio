@@ -7,7 +7,7 @@ import { TrendingUp, TrendingDown, Minus, Search, RefreshCw, Bookmark, AlertCirc
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import NewsSearch, { type SuggestionItem } from "./components/NewsSearch";
-import { stockDatabase } from "@/lib/korean-stocks";
+
 import NewsCard from "./components/NewsCard";
 import OverallSummary from "./components/OverallSummary";
 import NewsLoadingSkeleton from "./components/NewsLoadingSkeleton";
@@ -78,11 +78,7 @@ export default function VistaNewsPage() {
             // is_active 포트폴리오가 여러 개일 수 있으므로 전체 entries 합산
             const entries = rows.flatMap((r: { entries: unknown[] }) => r.entries ?? []);
             if (entries.length === 0) return;
-            // ticker → koName 역조회 맵 생성
-            const tickerToKoName: Record<string, string> = {};
-            for (const v of Object.values(stockDatabase)) {
-              if (!tickerToKoName[v.ticker]) tickerToKoName[v.ticker] = v.koName;
-            }
+            // entry.name에 공공데이터포털/KRX에서 받아온 종목명이 이미 저장되어 있으므로 그대로 사용
             const items: SuggestionItem[] = (entries as { ticker: string; name: string; currency: string }[])
               .map((e) => {
                 const isKR = e.currency === "KRW";
@@ -90,7 +86,7 @@ export default function VistaNewsPage() {
                 const cleanTicker = isKR ? e.ticker.replace(/\.(KS|KQ)$/, "") : e.ticker;
                 return {
                   ticker: cleanTicker,
-                  name: isKR ? (tickerToKoName[e.ticker] ?? e.name) : e.name,
+                  name: e.name,
                   market: isKR ? "KR" : "US",
                 };
               });

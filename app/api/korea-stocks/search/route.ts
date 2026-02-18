@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import kisClient from '@/lib/kis-client';
-import { findStock, getKoreanName } from '@/lib/korean-stocks';
+import { koreanStockLogos } from '@/lib/korean-stocks';
+import publicDataClient from '@/lib/public-data-client';
+import krxOpenAPIClient from '@/lib/krx-open-api-client';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -11,40 +12,58 @@ export async function GET(request: Request) {
     }
 
     const query = q.trim();
+    // .KS/.KQ/.KN 형식이면 접미사 제거 후 코드만 추출해 검색
+    const searchQuery = query.replace(/\.(KS|KQ|KN)$/i, '');
 
     try {
-        // 1. 먼저 database에서 매핑된 한국 주식인지 확인
-        const stockInfo = findStock(query);
-
-        let results: any[] = [];
-
-        if (stockInfo) {
-            // Database에 있는 종목이면 그 정보 사용
-            const koName = getKoreanName(stockInfo.ticker);
-            results = [
-                {
-                    ticker: stockInfo.ticker,
-                    name: koName ?? stockInfo.koName,
-                    exchange: stockInfo.ticker.endsWith('.KQ') ? 'KOSDAQ' : 'KOSPI',
-                },
-            ];
-        } else {
-            // 2. KIS API에서 한국 주식 검색
-            const kisResults = await kisClient.searchStock(query);
-
-            results = kisResults.map((item) => {
-                const fullTicker = `${item.symbol}.${item.exchange}`;
-                const koName = getKoreanName(fullTicker);
-
-                return {
-                    ticker: fullTicker,
-                    name: koName ?? item.name,
-                    exchange: item.market,
-                };
-            });
+        // KRX Open API 시도 (우선순위 1)
+        try {
+            const krxOpenResults = await krxOpenAPIClient.searchStock(searchQuery);
+            if (krxOpenResults.length > 0) {
+                return NextResponse.json({
+                    results: krxOpenResults.map((item) => {
+                        const exchangeCode = krxOpenAPIClient.getExchangeCode(item.market);
+                        const ticker = `${item.code}.${exchangeCode}`;
+                        return {
+                            ticker,
+                            name: item.name,
+                            exchange: item.market,
+                            type: 'korean',
+                            source: 'krx-open',
+                            logo: koreanStockLogos[ticker],
+                        };
+                    }),
+                });
+            }
+        } catch (error) {
+            console.warn('KRX Open API search failed:', error);
         }
 
-        return NextResponse.json({ results });
+        // 공공데이터포털 시도 (폴백)
+        try {
+            const krxResults = await publicDataClient.searchStock(searchQuery);
+            if (krxResults.length > 0) {
+                return NextResponse.json({
+                    results: krxResults.map((item) => {
+                        const exchangeCode = publicDataClient.getExchangeCode(item.market);
+                        const ticker = `${item.code}.${exchangeCode}`;
+                        return {
+                            ticker,
+                            name: item.name,
+                            exchange: item.market,
+                            type: 'korean',
+                            source: 'public-data',
+                            logo: koreanStockLogos[ticker],
+                        };
+                    }),
+                });
+            }
+        } catch (error) {
+            console.warn('Public Data API search failed:', error);
+        }
+
+        // 어디서도 결과 없음
+        return NextResponse.json({ results: [] });
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error('Korean stock search error:', errorMessage);

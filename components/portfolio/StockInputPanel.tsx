@@ -6,6 +6,7 @@ interface SearchResult {
     ticker: string;
     name: string;
     exchange: string;
+    logo?: string;
 }
 
 interface StockInputPanelProps {
@@ -151,6 +152,19 @@ export default function StockInputPanel({ onAdd }: StockInputPanelProps) {
                                 onClick={() => handleSelect(r)}
                                 className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/5"
                             >
+                                {r.logo ? (
+                                    <img
+                                        src={r.logo}
+                                        alt={r.name}
+                                        className="h-6 w-6 flex-shrink-0 rounded object-contain"
+                                        onError={(e) => {
+                                            const img = e.target as HTMLImageElement;
+                                            img.style.display = "none";
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="h-6 w-6 flex-shrink-0 rounded bg-white/10" />
+                                )}
                                 <span className="min-w-[64px] font-mono text-xs font-bold text-[#93C572]">
                                     {r.ticker}
                                 </span>

@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import * as d3 from "d3";
 import ColorThief from "colorthief";
 import { PortfolioEntry } from "@/hooks/usePortfolio";
-import { getKoreanName } from "@/lib/korean-stocks";
+
 
 interface ChartItem {
     ticker: string;
@@ -141,8 +141,8 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
             .filter((e) => e.currentPrice !== null && e.quantity > 0)
             .map((e) => ({
                 ticker: e.ticker,
-                // 한글명으로 표시 (있으면 한글명, 없으면 원래 이름)
-                name: getKoreanName(e.ticker) ?? e.name,
+                // entry.name에 공공데이터포털/KRX에서 받아온 종목명이 이미 저장되어 있음
+                name: e.name,
                 value: e.quantity * convertPrice(e.currentPrice ?? 0, e.currency, displayCurrency),
                 logoUrl: e.logoUrl,
                 color: colorCacheRef.current[e.ticker] ?? "",
@@ -292,7 +292,8 @@ export default function DonutChart({ entries, displayCurrency, exchangeRate, col
             const posC: [number, number] = [endX, adjustedY];
 
             const pct = ((d.data.value / total) * 100).toFixed(1);
-            const shortName = d.data.name.length > 12 ? d.data.ticker : d.data.name;
+            // 이름이 너무 길면 앞 8자만 표시 (ticker 숫자코드 대신)
+            const shortName = d.data.name.length > 12 ? d.data.name.slice(0, 8) + "…" : d.data.name;
 
             // 지시선 (꺾인 선)
             labelGroup.append("polyline")
