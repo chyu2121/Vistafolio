@@ -64,7 +64,7 @@ export default function Navbar() {
                     </span>
                 </Link>
                 {!user && (
-                    <Link href="/admin/login">
+                    <Link href="/login">
                         <button className="hidden md:block rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-2.5 py-1.5 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer">
                             Admin
                         </button>

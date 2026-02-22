@@ -6,7 +6,7 @@ export default async function AdminDashboardPage() {
     const supabase = await createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) redirect("/admin/login");
+    if (!user) redirect("/login");
 
     // profiles에서 role 확인
     const { data: profile } = await supabase
@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
     if (profile?.role !== "admin") redirect("/");
 
     // 게시글 목록 조회 (발행/임시저장 모두)
-    const { data: posts } = await supabase
+    const { data: rawPosts } = await supabase
         .from("posts")
         .select(`
             id,
@@ -31,10 +31,16 @@ export default async function AdminDashboardPage() {
         `)
         .order("created_at", { ascending: false });
 
+    // Supabase가 배열로 반환하는 categories를 단일 객체로 변환
+    const posts = rawPosts?.map(post => ({
+        ...post,
+        categories: Array.isArray(post.categories) ? post.categories[0] : post.categories
+    })) ?? [];
+
     return (
         <AdminDashboardClient
             profile={{ display_name: profile.display_name, email: profile.email }}
-            posts={posts ?? []}
+            posts={posts}
         />
     );
 }
