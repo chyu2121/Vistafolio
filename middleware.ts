@@ -30,8 +30,8 @@ export async function middleware(request: NextRequest) {
 
     const { pathname } = request.nextUrl
 
-    // /admin/login은 인증 없이 접근 가능
-    if (pathname === '/admin/login') {
+    // /login은 인증 없이 접근 가능
+    if (pathname === '/login') {
         // 이미 로그인된 경우 대시보드로 리다이렉트
         if (user) {
             return NextResponse.redirect(new URL('/admin/dashboard', request.url))
@@ -42,7 +42,7 @@ export async function middleware(request: NextRequest) {
     // /admin/* 경로 보호
     if (pathname.startsWith('/admin')) {
         if (!user) {
-            return NextResponse.redirect(new URL('/admin/login', request.url))
+            return NextResponse.redirect(new URL('/login', request.url))
         }
 
         // 관리자 권한 확인
@@ -63,5 +63,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         '/admin/:path*',
+        '/login',
     ],
 }

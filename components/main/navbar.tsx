@@ -56,13 +56,20 @@ export default function Navbar() {
             transition={{ duration: 0.5 }}
             className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 transition-all duration-300 md:px-12 bg-gradient-to-b from-black/5 to-black/0 backdrop-blur-sm border-b border-white/0"
         >
-            {/* Left: Logo */}
-            <div className="flex items-center gap-2 z-10">
+            {/* Left: Logo & Admin */}
+            <div className="flex items-center gap-3 z-10">
                 <Link href="/" className="flex items-center group">
                     <span className="text-xl font-bold tracking-tight text-white hover:text-[#93C572] transition-colors duration-300">
                         Vistafolio
                     </span>
                 </Link>
+                {!user && (
+                    <Link href="/admin/login">
+                        <button className="hidden md:block rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-2.5 py-1.5 text-xs font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer">
+                            Admin
+                        </button>
+                    </Link>
+                )}
             </div>
 
             {/* Center: Links (Absolute to ensure true center) */}
@@ -111,18 +118,11 @@ export default function Navbar() {
                         </button>
                     </>
                 ) : (
-                    <>
-                        <Link href="/auth">
-                            <button className="hidden md:block rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer">
-                                Dashboard
-                            </button>
-                        </Link>
-                        <Link href="/admin/login">
-                            <button className="hidden md:block rounded-full bg-amber-500/10 backdrop-blur-md border border-amber-500/30 px-4 py-2 text-sm font-semibold text-amber-400 transition-all hover:scale-105 active:scale-95 hover:bg-amber-500/20 hover:border-amber-500/50 cursor-pointer">
-                                Admin
-                            </button>
-                        </Link>
-                    </>
+                    <Link href="/auth">
+                        <button className="hidden md:block rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer">
+                            Dashboard
+                        </button>
+                    </Link>
                 )}
 
                 {/* Mobile Menu Button */}

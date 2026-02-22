@@ -72,6 +72,18 @@ export default async function VistaForumPage({
 
     const supabase = await createClient();
 
+    // Admin 체크
+    const { data: { user } } = await supabase.auth.getUser();
+    let isAdmin = false;
+    if (user) {
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+        isAdmin = profile?.role === "admin";
+    }
+
     // 게시글 조회
     let query = supabase
         .from("posts")
@@ -134,9 +146,17 @@ export default async function VistaForumPage({
                     </p>
                 </div>
 
-                {/* 카테고리 탭 */}
-                <div className="mb-8">
+                {/* 카테고리 탭 & 글쓰기 버튼 */}
+                <div className="mb-8 flex items-center justify-between gap-4">
                     <CategoryTabs current={category ?? "all"} />
+                    {isAdmin && (
+                        <Link
+                            href="/admin/posts/new"
+                            className="shrink-0 rounded-lg bg-[#93C572] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7fb05e]"
+                        >
+                            글쓰기
+                        </Link>
+                    )}
                 </div>
 
                 {/* 게시글 목록 */}

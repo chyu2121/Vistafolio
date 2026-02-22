@@ -17,7 +17,7 @@ export default async function AdminLayout({
 
     // 로그인하지 않은 경우 (middleware에서도 체크하지만 이중 보호)
     if (!user) {
-        redirect('/admin/login')
+        redirect('/login')
     }
 
     // 관리자 권한 확인
