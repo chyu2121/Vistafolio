@@ -44,6 +44,17 @@ export async function middleware(request: NextRequest) {
         if (!user) {
             return NextResponse.redirect(new URL('/admin/login', request.url))
         }
+
+        // 관리자 권한 확인
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (!profile || profile.role !== 'admin') {
+            return NextResponse.redirect(new URL('/', request.url))
+        }
     }
 
     return supabaseResponse

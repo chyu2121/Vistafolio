@@ -111,11 +111,18 @@ export default function Navbar() {
                         </button>
                     </>
                 ) : (
-                    <Link href="/auth">
-                        <button className="hidden md:block rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer">
-                            Dashboard
-                        </button>
-                    </Link>
+                    <>
+                        <Link href="/auth">
+                            <button className="hidden md:block rounded-full bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:scale-105 active:scale-95 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] cursor-pointer">
+                                Dashboard
+                            </button>
+                        </Link>
+                        <Link href="/admin/login">
+                            <button className="hidden md:block rounded-full bg-amber-500/10 backdrop-blur-md border border-amber-500/30 px-4 py-2 text-sm font-semibold text-amber-400 transition-all hover:scale-105 active:scale-95 hover:bg-amber-500/20 hover:border-amber-500/50 cursor-pointer">
+                                Admin
+                            </button>
+                        </Link>
+                    </>
                 )}
 
                 {/* Mobile Menu Button */}

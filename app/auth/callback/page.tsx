@@ -2,35 +2,40 @@
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const code = searchParams.get("code");
+    const handleCallback = async () => {
+      const code = searchParams.get("code");
+      const next = searchParams.get("next") || "/dashboard";
 
-    if (code) {
-      supabase.auth
-        .exchangeCodeForSession(code)
-        .then(({ error }) => {
-          if (error) {
-            console.error("Auth callback error:", error.message);
-            router.replace("/auth?error=callback_failed");
-          } else {
-            router.replace("/dashboard");
-          }
-        });
-    } else {
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      if (code) {
+        const supabase = createClient();
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (error) {
+          console.error("Auth callback error:", error.message);
+          router.replace("/auth?error=callback_failed");
+        } else {
+          router.replace(next);
+        }
+      } else {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+
         if (session) {
-          router.replace("/dashboard");
+          router.replace(next);
         } else {
           router.replace("/auth");
         }
-      });
-    }
+      }
+    };
+
+    handleCallback();
   }, [router, searchParams]);
 
   return (

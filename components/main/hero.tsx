@@ -3,7 +3,7 @@
 import React, { useRef } from "react"
 import TextCursorProximity from "@/components/ui/text-cursor-proximity"
 import { motion } from "motion/react"
-import { PortfolioIllustration, AiNewsIllustration, SavingsIllustration } from "@/components/ui/illustrations"
+import { PortfolioIllustration, AiNewsIllustration, SavingsIllustration, ForumIllustration } from "@/components/ui/illustrations"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 
@@ -37,6 +37,12 @@ const features: Feature[] = [
         description: "최신 특판 비교부터 우대 조건 분석, 세후 실수령액 계산까지 한번에 끝내드립니다.",
         icon: SavingsIllustration,
         href: "/vista_savings",
+    },
+    {
+        title: "Vista Forum",
+        description: "사회초년생을 위한 재테크 가이드. 주식, ETF, 예적금부터 절세 계좌까지.",
+        icon: ForumIllustration,
+        href: "/vista_forum",
     },
 ]
 
@@ -89,7 +95,7 @@ export default function Hero() {
             </div>
 
             {/* Feature Cards Grid */}
-            <div className="z-10 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full">
+            <div className="z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full">
                 {features.map((feature, index) => {
                     const CardContent = (
                         <motion.div

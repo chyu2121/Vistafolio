@@ -178,3 +178,46 @@ export const SavingsIllustration = ({ className }: { className?: string }) => {
         </svg>
     )
 }
+
+export const ForumIllustration = ({ className }: { className?: string }) => {
+    return (
+        <svg
+            viewBox="0 0 100 100"
+            className={className}
+            fill="none"
+            stroke="none"
+        >
+            {/* Chat/Forum Bubbles */}
+            {/* Main bubble - Green */}
+            <rect x="25" y="30" width="50" height="28" rx="6" fill="rgba(147, 197, 114, 0.7)" stroke="rgba(147, 197, 114, 0.9)" strokeWidth="1.5" />
+
+            {/* Text lines in main bubble */}
+            <rect x="32" y="38" width="36" height="2" rx="1" fill="rgba(255, 255, 255, 0.8)" />
+            <rect x="32" y="43" width="30" height="2" rx="1" fill="rgba(255, 255, 255, 0.6)" />
+            <rect x="32" y="48" width="32" height="2" rx="1" fill="rgba(255, 255, 255, 0.6)" />
+
+            {/* Tail of main bubble */}
+            <path d="M40 58 L35 63 L42 60" fill="rgba(147, 197, 114, 0.7)" />
+
+            {/* Secondary bubble - Blue */}
+            <rect x="45" y="50" width="38" height="22" rx="5" fill="rgba(100, 150, 200, 0.7)" stroke="rgba(100, 150, 200, 0.9)" strokeWidth="1.5" />
+
+            {/* Text lines in secondary bubble */}
+            <rect x="52" y="56" width="24" height="1.8" rx="0.9" fill="rgba(255, 255, 255, 0.8)" />
+            <rect x="52" y="61" width="20" height="1.8" rx="0.9" fill="rgba(255, 255, 255, 0.6)" />
+            <rect x="52" y="66" width="22" height="1.8" rx="0.9" fill="rgba(255, 255, 255, 0.6)" />
+
+            {/* Tail of secondary bubble */}
+            <path d="M70 72 L73 77 L68 74" fill="rgba(100, 150, 200, 0.7)" />
+
+            {/* User icon - Purple */}
+            <circle cx="30" cy="70" r="6" fill="rgba(180, 100, 160, 0.7)" stroke="rgba(180, 100, 160, 0.9)" strokeWidth="1" />
+            <circle cx="30" cy="68" r="2" fill="rgba(255, 255, 255, 0.9)" />
+            <path d="M25 74 Q30 72 35 74" stroke="rgba(255, 255, 255, 0.9)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+
+            {/* Notification badge - Red */}
+            <circle cx="70" cy="30" r="4" fill="rgba(255, 130, 130, 0.9)" stroke="rgba(255, 255, 255, 0.5)" strokeWidth="0.8" />
+            <text x="70" y="31.5" fontSize="3" fill="rgba(255,255,255,0.95)" fontWeight="700" textAnchor="middle">3</text>
+        </svg>
+    )
+}

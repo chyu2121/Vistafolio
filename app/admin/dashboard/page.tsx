@@ -20,7 +20,15 @@ export default async function AdminDashboardPage() {
     // 게시글 목록 조회 (발행/임시저장 모두)
     const { data: posts } = await supabase
         .from("posts")
-        .select("id, title, category, is_published, view_count, created_at")
+        .select(`
+            id,
+            title,
+            category_id,
+            categories(name),
+            is_published,
+            view_count,
+            created_at
+        `)
         .order("created_at", { ascending: false });
 
     return (
