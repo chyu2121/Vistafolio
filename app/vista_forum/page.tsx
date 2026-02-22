@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import CategoryTabs, { CATEGORIES } from "./CategoryTabs";
+import CategoryTabs from "./CategoryTabs";
 
 // ─── 상수 ─────────────────────────────────────────────────────────────────────
 const PAGE_SIZE = 12;
@@ -53,7 +53,7 @@ interface Post {
     title: string;
     summary: string | null;
     category_id: number | null;
-    categories: { name: string } | null;
+    categories: any;
     thumbnail_url: string | null;
     view_count: number;
     created_at: string;
@@ -175,7 +175,7 @@ export default async function VistaForumPage({
                             {count}개의 글
                         </div>
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                            {(posts as Post[]).map((post) => (
+                            {(posts as any[]).map((post: Post) => (
                                 <PostCard key={post.id} post={post} />
                             ))}
                         </div>
@@ -224,9 +224,9 @@ function PostCard({ post }: { post: Post }) {
                         </svg>
                     )}
                     {/* 카테고리 태그 */}
-                    {post.categories && (
+                    {(post as any).categories && (
                         <span className="absolute left-3 top-3 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                            {post.categories.name}
+                            {(post as any).categories.name}
                         </span>
                     )}
                 </div>
@@ -307,11 +307,10 @@ function Pagination({
                 <Link
                     key={p}
                     href={buildUrl(p)}
-                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium transition ${
-                        p === current
-                            ? "bg-[#93C572] text-white"
-                            : "border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-neutral-400 hover:border-gray-400 dark:hover:border-white/20 hover:text-gray-900 dark:hover:text-white"
-                    }`}
+                    className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-medium transition ${p === current
+                        ? "bg-[#93C572] text-white"
+                        : "border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 text-gray-600 dark:text-neutral-400 hover:border-gray-400 dark:hover:border-white/20 hover:text-gray-900 dark:hover:text-white"
+                        }`}
                 >
                     {p}
                 </Link>

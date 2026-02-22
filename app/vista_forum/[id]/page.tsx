@@ -145,9 +145,9 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
                 <article className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 md:p-12">
                     {/* 카테고리 & 관리자 버튼 */}
                     <div className="mb-4 flex items-center justify-between">
-                        {post.categories && (
+                        {(post as any).categories && (
                             <span className="inline-block rounded-full border border-[#93C572]/30 bg-[#93C572]/10 px-3 py-1 text-xs font-medium text-[#93C572]">
-                                {post.categories.name}
+                                {(post as any).categories.name}
                             </span>
                         )}
                         {isAdmin && (
