@@ -11,26 +11,53 @@ function AuthCallbackContent() {
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get("code");
-      const next = searchParams.get("next") || "/dashboard";
 
       if (code) {
         const supabase = createClient();
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
 
-        if (error) {
-          console.error("Auth callback error:", error.message);
-          router.replace("/auth?error=callback_failed");
-        } else {
-          router.replace(next);
+        if (sessionError) {
+          console.error("Auth callback error:", sessionError.message);
+          router.replace("/login?error=callback_failed");
+          return;
         }
+
+        // 세션 획득 후 user 정보 가져오기
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          router.replace("/login");
+          return;
+        }
+
+        // profiles 테이블에서 role 확인
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+
+        if (profileError && profileError.code === "PGRST116") {
+          // profiles에 행이 없는 경우 (신규 사용자) - role = 'user'로 자동 생성
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert({ id: user.id, role: "user" });
+
+          if (insertError) {
+            console.error("Profile insert error:", insertError.message);
+          }
+        }
+
+        // 모든 사용자 /dashboard로 리다이렉트
+        router.replace("/dashboard");
       } else {
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
-          router.replace(next);
+          router.replace("/dashboard");
         } else {
-          router.replace("/auth");
+          router.replace("/login");
         }
       }
     };

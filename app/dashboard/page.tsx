@@ -54,16 +54,45 @@ export default function DashboardPage() {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [recentPosts, setRecentPosts] = useState<any[]>([]);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        const initializePage = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+
             if (!session) {
-                router.replace("/auth");
-            } else {
-                setUser(session.user);
-                setLoading(false);
+                router.replace("/login");
+                return;
             }
-        });
+
+            setUser(session.user);
+
+            // profiles 테이블에서 role 확인
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("id", session.user.id)
+                .single();
+
+            const userIsAdmin = profile?.role === "admin";
+            setIsAdmin(userIsAdmin);
+
+            // 관리자인 경우 최근 게시글 가져오기
+            if (userIsAdmin) {
+                const { data: posts } = await supabase
+                    .from("forum_posts")
+                    .select("id, title, published, created_at")
+                    .order("created_at", { ascending: false })
+                    .limit(5);
+
+                setRecentPosts(posts || []);
+            }
+
+            setLoading(false);
+        };
+
+        initializePage();
     }, [router]);
 
     const handleSignOut = async () => {
@@ -173,6 +202,74 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </motion.div>
+
+                {/* 관리자 패널 */}
+                {isAdmin && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.5 }}
+                        className="mt-8 rounded-2xl border border-[#93C572]/30 bg-gradient-to-br from-[#93C572]/10 to-[#93C572]/5 p-6"
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-sm font-semibold text-[#93C572] uppercase tracking-wider">관리자 메뉴</h2>
+                            <span className="rounded-full bg-[#93C572]/20 px-3 py-1 text-xs font-medium text-[#93C572]">
+                                Admin
+                            </span>
+                        </div>
+
+                        {/* 버튼 그룹 */}
+                        <div className="flex flex-wrap gap-3 mb-6">
+                            <Link href="/admin/posts/new">
+                                <button className="flex items-center gap-2 rounded-lg bg-[#93C572]/20 px-4 py-2.5 text-sm font-medium text-[#93C572] transition-all hover:bg-[#93C572]/30 hover:shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    새 글 작성
+                                </button>
+                            </Link>
+                            <Link href="/admin/dashboard">
+                                <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/10 hover:shadow-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                    </svg>
+                                    관리자 대시보드
+                                </button>
+                            </Link>
+                        </div>
+
+                        {/* 최근 게시글 목록 */}
+                        <div>
+                            <h3 className="mb-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider">최근 게시글</h3>
+                            {recentPosts.length > 0 ? (
+                                <div className="space-y-2">
+                                    {recentPosts.map((post) => (
+                                        <div
+                                            key={post.id}
+                                            className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3 transition-all hover:bg-white/10"
+                                        >
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                <span className="text-sm text-white truncate">{post.title}</span>
+                                                {!post.published && (
+                                                    <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-medium text-yellow-500">
+                                                        미발행
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <Link href={`/admin/posts/${post.id}/edit`}>
+                                                <button className="ml-2 text-xs text-neutral-400 hover:text-[#93C572] transition-colors">
+                                                    수정
+                                                </button>
+                                            </Link>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-neutral-500">게시글이 없습니다.</p>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
             </main>
         </div>
     );
