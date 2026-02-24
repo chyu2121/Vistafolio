@@ -12,7 +12,7 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import { Color } from "@tiptap/extension-color";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { uploadImage } from "@/lib/supabase/storage";
-import { createPost, updatePost } from "@/app/admin/posts/actions";
+import { createPost, updatePost } from "@/app/vista_forum/actions";
 import { createClient } from "@/lib/supabase/client";
 
 interface Category {

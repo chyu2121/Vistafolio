@@ -34,9 +34,16 @@ export async function middleware(request: NextRequest) {
     if (pathname === '/login') {
         // 이미 로그인된 경우 대시보드로 리다이렉트
         if (user) {
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+            return NextResponse.redirect(new URL('/dashboard', request.url))
         }
         return supabaseResponse
+    }
+
+    // /dashboard 경로 보호 (로그인 필요)
+    if (pathname === '/dashboard') {
+        if (!user) {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
     }
 
     // /admin/* 경로 보호
@@ -64,5 +71,6 @@ export const config = {
     matcher: [
         '/admin/:path*',
         '/login',
+        '/dashboard',
     ],
 }

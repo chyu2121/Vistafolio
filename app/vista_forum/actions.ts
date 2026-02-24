@@ -20,7 +20,7 @@ export interface UpdatePostInput extends CreatePostInput {
 
 export async function createPost(input: CreatePostInput) {
     const supabase = await createClient();
-    
+
     // 사용자 확인
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -69,13 +69,13 @@ export async function createPost(input: CreatePostInput) {
 
     revalidatePath('/vista_forum');
     revalidatePath('/dashboard');
-    
+
     return data.id;
 }
 
 export async function updatePost(input: UpdatePostInput) {
     const supabase = await createClient();
-    
+
     // 사용자 확인
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -129,13 +129,13 @@ export async function updatePost(input: UpdatePostInput) {
     revalidatePath(`/vista_forum/${input.id}`);
     revalidatePath('/vista_forum');
     revalidatePath('/dashboard');
-    
+
     return input.id;
 }
 
 export async function deletePost(id: string) {
     const supabase = await createClient();
-    
+
     // 사용자 확인
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {

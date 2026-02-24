@@ -191,7 +191,15 @@ export default function DashboardPage() {
                     transition={{ duration: 0.4, delay: 0.4 }}
                     className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6"
                 >
-                    <h2 className="mb-4 text-sm font-semibold text-neutral-400 uppercase tracking-wider">계정 정보</h2>
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider">계정 정보</h2>
+                        <button
+                            onClick={handleSignOut}
+                            className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-neutral-400 transition hover:border-white/20 hover:text-white cursor-pointer"
+                        >
+                            로그아웃
+                        </button>
+                    </div>
                     <div className="flex items-center gap-4">
                         {avatarUrl ? (
                             <img
@@ -232,22 +240,39 @@ export default function DashboardPage() {
 
                         {/* 버튼 그룹 */}
                         <div className="flex flex-wrap gap-3 mb-6">
-                            <Link href="/admin/posts/new">
-                                <button className="flex items-center gap-2 rounded-lg bg-[#93C572]/20 px-4 py-2.5 text-sm font-medium text-[#93C572] transition-all hover:bg-[#93C572]/30 hover:shadow-lg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <Link href="/vista_forum/write">
+                                <button className="flex items-center gap-2 rounded-lg bg-[#93C572] px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#7eb35d] hover:shadow-lg cursor-pointer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                                     </svg>
                                     새 글 작성
                                 </button>
                             </Link>
-                            <Link href="/admin/dashboard">
-                                <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/10 hover:shadow-lg">
+                            <Link href="/vista_forum">
+                                <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/10 hover:shadow-lg cursor-pointer">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                                     </svg>
-                                    관리자 대시보드
+                                    포럼 관리
                                 </button>
                             </Link>
+                        </div>
+
+                        {/* 게시글 통계 */}
+                        <div className="grid grid-cols-3 gap-3 mb-6">
+                            {[
+                                { label: "전체 글", value: recentPosts.length, color: "text-white" },
+                                { label: "발행됨", value: recentPosts.filter(p => p.published).length, color: "text-[#93C572]" },
+                                { label: "임시저장", value: recentPosts.filter(p => !p.published).length, color: "text-yellow-500" },
+                            ].map((stat) => (
+                                <div
+                                    key={stat.label}
+                                    className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-center"
+                                >
+                                    <p className="text-xs text-neutral-400">{stat.label}</p>
+                                    <p className={`mt-1 text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                                </div>
+                            ))}
                         </div>
 
                         {/* 최근 게시글 목록 */}
@@ -264,15 +289,23 @@ export default function DashboardPage() {
                                                 <span className="text-sm text-white truncate">{post.title}</span>
                                                 {!post.published && (
                                                     <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-medium text-yellow-500">
-                                                        미발행
+                                                        임시저장
                                                     </span>
                                                 )}
                                             </div>
-                                            <Link href={`/admin/posts/${post.id}/edit`}>
-                                                <button className="ml-2 text-xs text-neutral-400 hover:text-[#93C572] transition-colors">
-                                                    수정
-                                                </button>
-                                            </Link>
+                                            <div className="flex items-center gap-2">
+                                                <Link href={`/vista_forum/${post.id}`}>
+                                                    <button className="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer">
+                                                        보기
+                                                    </button>
+                                                </Link>
+                                                <span className="text-neutral-600">·</span>
+                                                <Link href={`/vista_forum/${post.id}/edit`}>
+                                                    <button className="text-xs text-neutral-400 hover:text-[#93C572] transition-colors cursor-pointer">
+                                                        수정
+                                                    </button>
+                                                </Link>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>

@@ -153,7 +153,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
                         {isAdmin && (
                             <div className="flex items-center gap-2">
                                 <Link
-                                    href={`/admin/posts/${id}/edit`}
+                                    href={`/vista_forum/${id}/edit`}
                                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
                                 >
                                     수정

@@ -43,10 +43,16 @@ export default async function AdminLayout({
                             </h1>
                             <nav className="flex space-x-4">
                                 <a
-                                    href="/admin/dashboard"
+                                    href="/dashboard"
                                     className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                                 >
                                     대시보드
+                                </a>
+                                <a
+                                    href="/vista_forum"
+                                    className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                                >
+                                    포럼
                                 </a>
                                 <a
                                     href="/admin/posts/new"

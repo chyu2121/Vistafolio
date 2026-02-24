@@ -151,7 +151,7 @@ export default async function VistaForumPage({
                     <CategoryTabs current={category ?? "all"} />
                     {isAdmin && (
                         <Link
-                            href="/admin/posts/new"
+                            href="/vista_forum/write"
                             className="shrink-0 rounded-lg bg-[#93C572] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#7fb05e]"
                         >
                             글쓰기
