@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 
 const FluidGradient = dynamic(
     () => import("@/components/ui/fluid-gradient").then((mod) => mod.FluidGradient),
@@ -50,11 +50,15 @@ function LoginContent() {
         setLoading(true);
         setError(null);
 
+        const supabase = createClient();
+
         // 로컬 환경에서는 window.location.origin 사용, 프로덕션에서는 env 사용
         const siteUrl = process.env.NODE_ENV === "production"
             ? (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin)
             : window.location.origin;
         const redirectTo = `${siteUrl}/auth/callback`;
+
+        console.log("[Login] Initiating Google OAuth with redirectTo:", redirectTo);
 
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
@@ -68,6 +72,7 @@ function LoginContent() {
         });
 
         if (error) {
+            console.error("[Login] OAuth error:", error);
             setError(error.message);
             setLoading(false);
         }

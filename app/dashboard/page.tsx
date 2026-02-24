@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/main/navbar";
 import type { User } from "@supabase/supabase-js";
 
@@ -59,24 +59,33 @@ export default function DashboardPage() {
 
     useEffect(() => {
         const initializePage = async () => {
+            const supabase = createClient();
+            console.log("[Dashboard] Checking session...");
             const { data: { session } } = await supabase.auth.getSession();
+            console.log("[Dashboard] Session:", session);
 
             if (!session) {
+                console.log("[Dashboard] No session, redirecting to /login");
                 router.replace("/login");
                 return;
             }
 
             setUser(session.user);
+            console.log("[Dashboard] User set:", session.user.email);
 
             // profiles 테이블에서 role 확인
+            console.log("[Dashboard] Fetching profile for user:", session.user.id);
             const { data: profile } = await supabase
                 .from("profiles")
                 .select("role")
                 .eq("id", session.user.id)
                 .single();
 
+            console.log("[Dashboard] Profile:", profile);
+
             const userIsAdmin = profile?.role === "admin";
             setIsAdmin(userIsAdmin);
+            console.log("[Dashboard] Is admin:", userIsAdmin);
 
             // 관리자인 경우 최근 게시글 가져오기
             if (userIsAdmin) {
@@ -87,15 +96,18 @@ export default function DashboardPage() {
                     .limit(5);
 
                 setRecentPosts(posts || []);
+                console.log("[Dashboard] Recent posts loaded:", posts?.length);
             }
 
             setLoading(false);
+            console.log("[Dashboard] Page initialized");
         };
 
         initializePage();
     }, [router]);
 
     const handleSignOut = async () => {
+        const supabase = createClient();
         await supabase.auth.signOut();
         router.replace("/");
     };

@@ -5,7 +5,7 @@ import Link from "next/link"
 import { motion, useScroll, useMotionValueEvent } from "motion/react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { supabase } from "@/lib/supabaseClient"
+import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
 
 export default function Navbar() {
@@ -19,6 +19,7 @@ export default function Navbar() {
     const handleSignOut = async () => {
         setIsSigningOut(true)
         try {
+            const supabase = createClient()
             await supabase.auth.signOut()
         } finally {
             window.location.href = "/"
@@ -30,6 +31,8 @@ export default function Navbar() {
     })
 
     useEffect(() => {
+        const supabase = createClient()
+
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null)
             setAvatarUrl(session?.user.user_metadata?.avatar_url as string | undefined)

@@ -11,52 +11,69 @@ function AuthCallbackContent() {
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get("code");
+      console.log("[AuthCallback] Code from URL:", code);
 
       if (code) {
         const supabase = createClient();
-        const { error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
+        console.log("[AuthCallback] Exchanging code for session...");
+        const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
 
         if (sessionError) {
-          console.error("Auth callback error:", sessionError.message);
+          console.error("[AuthCallback] Session error:", sessionError.message);
           router.replace("/login?error=callback_failed");
           return;
         }
 
+        console.log("[AuthCallback] Session created:", sessionData);
+
         // 세션 획득 후 user 정보 가져오기
         const { data: { user } } = await supabase.auth.getUser();
+        console.log("[AuthCallback] User:", user);
 
         if (!user) {
+          console.error("[AuthCallback] No user found");
           router.replace("/login");
           return;
         }
 
         // profiles 테이블에서 role 확인
+        console.log("[AuthCallback] Checking profile for user:", user.id);
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role")
           .eq("id", user.id)
           .single();
 
+        console.log("[AuthCallback] Profile:", profile, "Error:", profileError);
+
         if (profileError && profileError.code === "PGRST116") {
           // profiles에 행이 없는 경우 (신규 사용자) - role = 'user'로 자동 생성
+          console.log("[AuthCallback] Creating new profile with role=user");
           const { error: insertError } = await supabase
             .from("profiles")
             .insert({ id: user.id, role: "user" });
 
           if (insertError) {
-            console.error("Profile insert error:", insertError.message);
+            console.error("[AuthCallback] Profile insert error:", insertError.message);
+          } else {
+            console.log("[AuthCallback] Profile created successfully");
           }
         }
 
         // 모든 사용자 /dashboard로 리다이렉트
+        console.log("[AuthCallback] Redirecting to /dashboard");
         router.replace("/dashboard");
       } else {
+        console.log("[AuthCallback] No code, checking existing session");
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
+        console.log("[AuthCallback] Existing session:", session);
 
         if (session) {
+          console.log("[AuthCallback] Session found, redirecting to /dashboard");
           router.replace("/dashboard");
         } else {
+          console.log("[AuthCallback] No session, redirecting to /login");
           router.replace("/login");
         }
       }
